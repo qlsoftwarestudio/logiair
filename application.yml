@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: gestor-reservas
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/appdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8080
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:my-super-secret-key-for-development-1234567890}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# Logging Configuration
+logging:
+  level:
+    com.sportflow.gestor_reservas: DEBUG
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
