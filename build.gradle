@@ -51,6 +51,7 @@ tasks.named('jar') {
 tasks.named('bootJar') {
     enabled = true
     archiveClassifier = ''
+    archiveFileName = 'app.jar'
 }
 
 tasks.named('test') {
