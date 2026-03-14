@@ -1,11 +1,11 @@
-# api-gestor-reservas
-Backend para gestion del sistema de reserva de clases
+# logiair-os
+Backend para sistema de gestión logística de guías aéreas (AWB)
 
-### Sportflow – Backend Java + PostgreSQL + Docker
+### Logiair OS – Backend Java + PostgreSQL + Docker
 
-Aplicación backend básica desarrollada en Java + Spring Boot, conectada a PostgreSQL y ejecutada mediante Docker.
+Sistema operativo para despachantes de aduana desarrollado en Java + Spring Boot, conectado a PostgreSQL y ejecutado mediante Docker.
 
-El objetivo del proyecto es proveer una base simple, portable y reproducible para desarrollo de servicios backend.
+El objetivo del proyecto es proveer una plataforma completa para la digitalización y automatización del seguimiento operativo y administrativo de guías aéreas utilizadas en procesos de importación y exportación.
 
 ## 🧱 Stack tecnológico
 
@@ -46,7 +46,7 @@ No se necesita Java ni PostgreSQL local.
 
 1) Clonar repo
    git clone <repo-url>
-   cd sportflow
+   cd logiair-os
 
 2) Ejecutar script de arranque
    sh run.sh
@@ -83,7 +83,7 @@ Ver contenedores activos
 
 Ver logs del backend
     
-    docker logs sportflow-app
+    docker logs logiair-app
 
 Ver logs de postgres
     
@@ -91,7 +91,7 @@ Ver logs de postgres
 
 ### 🛑 Detener toda la aplicación
 
-    docker rm -f sportflow-app postgres-db && docker network rm app-network
+    docker rm -f logiair-app postgres-db && docker network rm app-network
 
 
 Esto:

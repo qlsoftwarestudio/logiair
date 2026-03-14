@@ -1,29 +1,142 @@
 spring:
   application:
-    name: gestor-reservas
+    name: logiair-os
+  
   datasource:
-    url: jdbc:postgresql://postgres-db:5432/appdb
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:logiairdb}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    # Configuración para persistencia de datos
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${DDL_AUTO:update}
+      show-sql: ${SHOW_SQL:false}
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          # Configuración para persistencia y rendimiento
+          jdbc:
+            batch_size: 20
+            order_inserts: true
+            order_updates: true
+          # Multi-tenancy
+          tenant_identifier_resolver: com.logiair.os.tenant.TenantIdentifierResolver
+          # Cache para mejor rendimiento
+          cache:
+            use_second_level_cache: true
+            use_query_cache: true
+            region:
+              factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
 
-server:
-  port: 8080
+  # Configuración del servidor
+  server:
+    port: ${PORT:8080}
+    servlet:
+      context-path: /
+    # Configuración para producción
+    compression:
+      enabled: true
+      mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/json,application/xml
+
+# Logging Configuration
+logging:
+  level:
+    com:
+      logiair:
+        os: ${LOG_LEVEL:INFO}
+    org:
+      springframework:
+        security: ${SECURITY_LOG_LEVEL:WARN}
+        web: ${WEB_LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  file:
+    name: logs/logiair-os.log
+    max-size: 10MB
+    max-history: 30
 
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:my-super-secret-key-for-development-1234567890}
   expiration: ${JWT_EXPIRATION:86400000}
 
-# Logging Configuration
-logging:
-  level:
-    com.sportflow.gestor_reservas: DEBUG
-    org.springframework.security: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+# Management y Health Checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      simple:
+        enabled: true
+
+# OpenAPI/Swagger Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+# Perfiles específicos
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-dev.sql
+  h2:
+    console:
+      enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
