@@ -8,15 +8,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final TenantContextFilter tenantContextFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(TenantContextFilter tenantContextFilter) {
+    public SecurityConfig(TenantContextFilter tenantContextFilter, CorsConfigurationSource corsConfigurationSource) {
         this.tenantContextFilter = tenantContextFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -25,6 +28,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .disable()
+                )
+                .cors(cors -> cors
+                        .configurationSource(corsConfigurationSource)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/health", "/actuator/health").permitAll()
