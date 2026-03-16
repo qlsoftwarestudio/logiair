@@ -23,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/air-waybills")
-@CrossOrigin(origins = "*")
 public class AirWaybillController {
 
     private final AirWaybillService airWaybillService;
