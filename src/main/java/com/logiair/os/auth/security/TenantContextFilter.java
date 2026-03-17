@@ -40,9 +40,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // Skip JWT processing for public endpoints
+        // Skip JWT processing only for onboarding and login, but process for register
         String path = request.getRequestURI();
-        if (path.startsWith("/auth/") || path.equals("/health")) {
+        if (path.equals("/auth/onboarding") || path.equals("/auth/login") || path.equals("/health")) {
             filterChain.doFilter(request, response);
             return;
         }

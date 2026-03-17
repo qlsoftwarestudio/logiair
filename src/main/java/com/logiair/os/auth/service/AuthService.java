@@ -41,10 +41,10 @@ public class AuthService {
 
         logger.info("Attempting to register user with email: {}", userRequest.getEmail());
 
-        // Get current tenant from context
+        // Get current tenant from context or extract from JWT if available
         Long currentTenantId = TenantContext.getCurrentTenantId();
         if (currentTenantId == null) {
-            throw new IllegalStateException("No tenant context found. User registration must be done within a tenant.");
+            throw new IllegalStateException("No tenant context found. User registration must be done within a tenant context.");
         }
 
         // Check if user already exists in current tenant
