@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,10 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserRequestDTO request) {
-        logger.info("user" + request.toString());
+        logger.info("Register request received for user: {}", request.toString());
+        logger.info("Current authentication: {}", SecurityContextHolder.getContext().getAuthentication());
+        logger.info("User authorities: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        
         String token = authService.register(request);
         return ResponseEntity.ok(Map.of("token", token, "message", "User registered successfully"));
     }

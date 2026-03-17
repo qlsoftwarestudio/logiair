@@ -56,6 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     logger.info("User found: {}", userDetails.getUsername());
 
                     if (jwtService.isTokenValid(jwt, userDetails)) {
+                        logger.info("JWT token valid for user: {}, authorities: {}", userEmail, userDetails.getAuthorities());
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
@@ -63,6 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
+                        logger.info("Authentication set in SecurityContext for user: {}", userEmail);
                     } else {
                         logger.warn("JWT token validation failed for user: {}", userEmail);
                     }
