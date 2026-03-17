@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
         // Orígenes permitidos
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:8080",
-            "https://id-preview--6bf20839-4fd9-4728-a89e-da6d5cebe892.lovable.app"
+            "https://logiair-front.vercel.app/"
         ));
         
         // Métodos permitidos
