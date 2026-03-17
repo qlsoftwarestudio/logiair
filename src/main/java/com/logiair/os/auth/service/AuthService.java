@@ -78,7 +78,7 @@ public class AuthService {
         try {
             User savedUser = userRepository.save(newUser);
             logger.info("User registered successfully: {} with ID: {} in tenant: {}", savedUser.getEmail(), savedUser.getId(), currentTenantId);
-            String token = jwtService.generateToken(savedUser.getEmail(), currentTenantId);
+            String token = jwtService.generateToken(savedUser.getEmail(), currentTenantId, savedUser.getRole());
             return token;
         } catch (Exception e) {
             logger.error("Failed to save user: {}", e.getMessage(), e);
@@ -96,7 +96,7 @@ public class AuthService {
         }
 
         Long tenantId = user.getTenant().getId();
-        return jwtService.generateToken(email, tenantId);
+        return jwtService.generateToken(email, tenantId, user.getRole());
     }
 }
 

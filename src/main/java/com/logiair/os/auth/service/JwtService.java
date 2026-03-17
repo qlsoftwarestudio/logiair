@@ -1,5 +1,6 @@
 package com.logiair.os.auth.service;
 
+import com.logiair.os.models.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -29,6 +30,10 @@ public class JwtService {
     }
 
     public String generateToken(String email, Long tenantId) {
+        return generateToken(email, tenantId, null);
+    }
+
+    public String generateToken(String email, Long tenantId, Role role) {
         var claimsBuilder = Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
@@ -37,6 +42,10 @@ public class JwtService {
 
         if (tenantId != null) {
             claimsBuilder.claim("tenantId", tenantId);
+        }
+
+        if (role != null) {
+            claimsBuilder.claim("role", role.name());
         }
 
         return claimsBuilder.compact();
@@ -65,6 +74,20 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload()
                     .get("tenantId", Long.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Role extractRole(String token) {
+        try {
+            String roleString = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("role", String.class);
+            return Role.valueOf(roleString);
         } catch (Exception e) {
             return null;
         }

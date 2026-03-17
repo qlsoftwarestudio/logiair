@@ -1,6 +1,7 @@
 package com.logiair.os.auth.security;
 
 import com.logiair.os.auth.service.JwtService;
+import com.logiair.os.models.Role;
 import com.logiair.os.tenant.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -69,11 +70,18 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
                 // Extraer y establecer tenantId del JWT
                 Long tenantId = jwtService.extractTenantId(jwt);
+                Role role = jwtService.extractRole(jwt);
                 if (tenantId != null) {
                     TenantContext.setCurrentTenant(tenantId);
                     logger.info("Tenant context set to: {}", tenantId);
                 } else {
                     logger.warn("JWT token does not contain tenantId");
+                }
+                
+                if (role != null) {
+                    logger.info("User role from JWT: {}", role);
+                } else {
+                    logger.warn("JWT token does not contain role");
                 }
             }
         }
