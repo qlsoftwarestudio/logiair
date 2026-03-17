@@ -59,10 +59,13 @@ public class AuthService {
         // Create new user from DTO using mapper
         User newUser = userMapper.toEntity(userRequest);
         newUser.setTenant(tenant);
+        newUser.setActive(userRequest.isActive()); // ← Establecer isActive manualmente
         
         // Debug logging
         logger.info("Mapped user: {}", newUser);
         logger.info("User email after mapping: '{}'", newUser.getEmail());
+        logger.info("User role: {}", newUser.getRole());
+        logger.info("User isActive: {}", newUser.getIsActive());
         
         // Encode password
         String hashedPassword = encoder.encode(userRequest.getPassword());
