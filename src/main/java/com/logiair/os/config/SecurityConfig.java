@@ -9,16 +9,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
+import com.logiair.os.auth.security.JwtFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final TenantContextFilter tenantContextFilter;
+    private final JwtFilter jwtFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(TenantContextFilter tenantContextFilter, CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfig(TenantContextFilter tenantContextFilter, JwtFilter jwtFilter, CorsConfigurationSource corsConfigurationSource) {
         this.tenantContextFilter = tenantContextFilter;
+        this.jwtFilter = jwtFilter;
         this.corsConfigurationSource = corsConfigurationSource;
     }
 
@@ -51,7 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .addFilterAfter(tenantContextFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(tenantContextFilter, JwtFilter.class);
 
         return http.build();
     }
