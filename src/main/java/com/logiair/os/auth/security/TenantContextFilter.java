@@ -42,7 +42,10 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
         // Skip JWT processing only for onboarding and login, but process for register
         String path = request.getRequestURI();
+        logger.info("TenantContextFilter processing path: {}", path);
+        
         if (path.equals("/auth/onboarding") || path.equals("/auth/login") || path.equals("/health")) {
+            logger.info("Skipping JWT processing for public endpoint: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
@@ -68,7 +71,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
                 Long tenantId = jwtService.extractTenantId(jwt);
                 if (tenantId != null) {
                     TenantContext.setCurrentTenant(tenantId);
-                    logger.debug("Tenant context set to: {}", tenantId);
+                    logger.info("Tenant context set to: {}", tenantId);
                 } else {
                     logger.warn("JWT token does not contain tenantId");
                 }
