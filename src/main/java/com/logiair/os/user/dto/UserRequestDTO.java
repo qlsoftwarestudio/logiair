@@ -3,6 +3,7 @@ import com.logiair.os.models.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserRequestDTO {
     @NotBlank
@@ -37,7 +38,10 @@ public class UserRequestDTO {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
     
+    @JsonProperty("isActive")
     public boolean isActive() { return isActive; }
+    
+    @JsonProperty("isActive")
     public void setActive(boolean isActive) { this.isActive = isActive; }
     
     public String getPassword() { return password; }
