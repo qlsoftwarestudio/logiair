@@ -12,7 +12,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "tenant", ignore = true)
-    @Mapping(target = "isActive", source = "isActive")
     User toEntity(UserRequestDTO dto);
 
     @Mapping(target = "id", source = "id")
