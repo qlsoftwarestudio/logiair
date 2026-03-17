@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(user -> User.builder()
                         .username(user.getEmail())
                         .password(user.getPassword())
-                        .roles(user.getRole().name())
+                        .roles("ROLE_" + user.getRole().name())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
