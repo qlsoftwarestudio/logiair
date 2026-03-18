@@ -63,9 +63,16 @@ public class AirWaybillService {
         airWaybill.setStatus(AirWaybillStatus.PRE_ALERT); // Default status
         
         logger.info("About to save AirWaybill, createdBy: {}", airWaybill.getCreatedBy());
-
-        AirWaybill savedAirWaybill = airWaybillRepository.save(airWaybill);
-        return airWaybillMapper.toResponse(savedAirWaybill);
+        logger.info("AirWaybill object before save: {}", airWaybill.toString());
+        
+        try {
+            AirWaybill savedAirWaybill = airWaybillRepository.save(airWaybill);
+            logger.info("AirWaybill saved successfully with ID: {}", savedAirWaybill.getId());
+            return airWaybillMapper.toResponse(savedAirWaybill);
+        } catch (Exception e) {
+            logger.error("Error saving AirWaybill: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Transactional(readOnly = true)

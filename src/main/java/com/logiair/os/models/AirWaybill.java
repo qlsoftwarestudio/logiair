@@ -57,7 +57,6 @@ public class AirWaybill {
     @Column(columnDefinition = "TEXT")
     private String observations;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
@@ -118,4 +117,22 @@ public class AirWaybill {
     public void setTenant(Tenant tenant) { this.tenant = tenant; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    
+    @Override
+    public String toString() {
+        return "AirWaybill{" +
+                "id=" + id +
+                ", awbNumber='" + awbNumber + '\'' +
+                ", operationType=" + operationType +
+                ", airline='" + airline + '\'' +
+                ", origin='" + origin + '\'' +
+                ", destination='" + destination + '\'' +
+                ", arrivalOrDepartureDate=" + arrivalOrDepartureDate +
+                ", status=" + status +
+                ", manifestNumber='" + manifestNumber + '\'' +
+                ", observations='" + observations + '\'' +
+                ", createdBy=" + (createdBy != null ? createdBy.getName() : "null") +
+                ", tenant=" + (tenant != null ? tenant.getName() : "null") +
+                '}';
+    }
 }
