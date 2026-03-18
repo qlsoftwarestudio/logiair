@@ -33,9 +33,6 @@ public class ReportController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION', 'CUSTOMER')")
     public ResponseEntity<DashboardResponse> getDashboard() {
         Long tenantId = TenantContext.getCurrentTenantId();
-        if (tenantId == null) {
-            throw new IllegalStateException("Tenant context not found. Please ensure you are properly authenticated.");
-        }
         DashboardResponse dashboard = reportService.getDashboardData(tenantId);
         return ResponseEntity.ok(dashboard);
     }

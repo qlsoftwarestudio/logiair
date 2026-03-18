@@ -34,7 +34,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/health", "/actuator/health").permitAll()
-                        .requestMatchers("/api/reports/dashboard").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS", "ADMINISTRATION")
+                        .requestMatchers("/api/reports/dashboard").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS", "ADMINISTRATION", "CUSTOMER")
                         .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "ADMINISTRATION")
                         .requestMatchers(HttpMethod.GET, "/api/customers/**").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS", "ADMINISTRATION")
                         .requestMatchers(HttpMethod.POST, "/api/customers").hasAnyRole("ADMIN", "ADMINISTRATION")
@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/air-waybills").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS")
                         .requestMatchers(HttpMethod.PUT, "/api/air-waybills/**").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS")
                         .requestMatchers(HttpMethod.DELETE, "/api/air-waybills/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/invoices/**").hasAnyRole("ADMIN", "ADMINISTRATION", "OPERATOR_LOGISTICS")
+                        .requestMatchers(HttpMethod.GET, "/api/invoices/**").hasAnyRole("ADMIN", "ADMINISTRATION", "OPERATOR_LOGISTICS", "CUSTOMER")
                         .requestMatchers(HttpMethod.POST, "/api/invoices").hasAnyRole("ADMIN", "ADMINISTRATION")
                         .requestMatchers(HttpMethod.PUT, "/api/invoices/**").hasAnyRole("ADMIN", "ADMINISTRATION")
                         .requestMatchers(HttpMethod.DELETE, "/api/invoices/**").hasRole("ADMIN")
