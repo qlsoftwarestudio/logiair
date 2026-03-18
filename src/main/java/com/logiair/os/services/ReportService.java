@@ -72,7 +72,7 @@ public class ReportService {
 
     public Map<String, Object> getOperationsReport(Long tenantId, LocalDate startDate, LocalDate endDate) {
         List<AirWaybill> airWaybills = airWaybillRepository.findByDateRange(
-                tenantId, startDate.atStartOfDay(), endDate.atTime(23, 59), 
+                tenantId, startDate, endDate, 
                 org.springframework.data.domain.Pageable.unpaged()
         ).getContent();
 
@@ -196,7 +196,7 @@ public class ReportService {
     private Map<String, Long> getRecentOperations(Long tenantId) {
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
         List<AirWaybill> recentAirWaybills = airWaybillRepository.findByDateRange(
-                tenantId, sevenDaysAgo.atStartOfDay(), LocalDate.now().atTime(23, 59),
+                tenantId, sevenDaysAgo, LocalDate.now(),
                 org.springframework.data.domain.Pageable.unpaged()
         ).getContent();
         
@@ -207,7 +207,7 @@ public class ReportService {
         for (int i = 0; i < 7; i++) {
             LocalDate date = LocalDate.now().minusDays(i);
             List<AirWaybill> dayAirWaybills = airWaybillRepository.findByDateRange(
-                    tenantId, date.atStartOfDay(), date.atTime(23, 59),
+                    tenantId, date, date,
                     org.springframework.data.domain.Pageable.unpaged()
             ).getContent();
             

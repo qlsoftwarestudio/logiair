@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +33,8 @@ public interface AirWaybillRepository extends JpaRepository<AirWaybill, Long> {
     @Query("SELECT awb FROM AirWaybill awb WHERE awb.tenant.id = :tenantId AND " +
            "awb.arrivalOrDepartureDate BETWEEN :startDate AND :endDate")
     Page<AirWaybill> findByDateRange(@Param("tenantId") Long tenantId, 
-                                    @Param("startDate") LocalDateTime startDate, 
-                                    @Param("endDate") LocalDateTime endDate, 
+                                    @Param("startDate") LocalDate startDate, 
+                                    @Param("endDate") LocalDate endDate, 
                                     Pageable pageable);
     
     @Query("SELECT COUNT(awb) FROM AirWaybill awb WHERE awb.tenant.id = :tenantId AND awb.status = :status")
