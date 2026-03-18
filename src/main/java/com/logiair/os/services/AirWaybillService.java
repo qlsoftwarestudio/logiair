@@ -59,10 +59,17 @@ public class AirWaybillService {
         airWaybill.setManifestNumber(request.getManifestNumber());
         airWaybill.setTenant(tenant);
         airWaybill.setCustomer(customer);
+        
+        // Ensure createdBy is properly set
+        if (createdBy == null) {
+            throw new IllegalStateException("Created by user cannot be null");
+        }
         airWaybill.setCreatedBy(createdBy);
+        
         airWaybill.setStatus(AirWaybillStatus.PRE_ALERT); // Default status
         
-        logger.info("About to save AirWaybill, createdBy: {}", airWaybill.getCreatedBy());
+        logger.info("About to save AirWaybill, createdBy ID: {}, createdBy name: {}", 
+                   airWaybill.getCreatedBy().getId(), airWaybill.getCreatedBy().getName());
         logger.info("AirWaybill object before save: {}", airWaybill.toString());
         
         try {
