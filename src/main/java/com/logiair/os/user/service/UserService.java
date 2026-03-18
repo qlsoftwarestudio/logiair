@@ -1,6 +1,7 @@
 package com.logiair.os.user.service;
 
 import com.logiair.os.exceptions.ResourceNotFoundException;
+import com.logiair.os.models.Tenant;
 import com.logiair.os.models.User;
 import com.logiair.os.tenant.TenantContext;
 import com.logiair.os.user.dto.PaginatedResponse;
@@ -48,6 +49,10 @@ public class UserService {
         
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
+        
+        // 🔥 FIX CORRECTO: Obtener el tenant completo del contexto actual
+        Tenant currentTenant = TenantContext.getCurrentTenant();
+        user.setTenant(currentTenant);
         
         User savedUser = repository.save(user);
         logger.info("User saved successfully with ID: {} for tenant: {}", savedUser.getId(), currentTenantId);

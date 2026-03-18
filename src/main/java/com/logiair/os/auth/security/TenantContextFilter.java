@@ -2,6 +2,8 @@ package com.logiair.os.auth.security;
 
 import com.logiair.os.auth.service.JwtService;
 import com.logiair.os.models.Role;
+import com.logiair.os.models.Tenant;
+import com.logiair.os.repositories.TenantRepository;
 import com.logiair.os.tenant.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,10 +28,12 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TenantRepository tenantRepository;
 
-    public TenantContextFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public TenantContextFilter(JwtService jwtService, UserDetailsService userDetailsService, TenantRepository tenantRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
@@ -72,8 +76,14 @@ public class TenantContextFilter extends OncePerRequestFilter {
                 Long tenantId = jwtService.extractTenantId(jwt);
                 Role role = jwtService.extractRole(jwt);
                 if (tenantId != null) {
-                    TenantContext.setCurrentTenant(tenantId);
-                    logger.info("Tenant context set to: {}", tenantId);
+                    // 🔥 FIX: Obtener el tenant completo de la base de datos
+                    Tenant tenant = tenantRepository.findById(tenantId).orElse(null);
+                    if (tenant != null) {
+                        TenantContext.setCurrentTenant(tenant);
+                        logger.info("Tenant context set to: {} ({})", tenant.getName(), tenantId);
+                    } else {
+                        logger.warn("Tenant with ID {} not found", tenantId);
+                    }
                 } else {
                     logger.warn("JWT token does not contain tenantId");
                 }
