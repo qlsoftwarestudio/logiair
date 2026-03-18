@@ -75,6 +75,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
                 // Extraer y establecer tenantId del JWT
                 Long tenantId = jwtService.extractTenantId(jwt);
                 Role role = jwtService.extractRole(jwt);
+                
+                logger.info("JWT extraction - tenantId: {}, role: {}, userEmail: {}", tenantId, role, userEmail);
+                
                 if (tenantId != null) {
                     // 🔥 FIX: Obtener el tenant completo de la base de datos
                     Tenant tenant = tenantRepository.findById(tenantId).orElse(null);
@@ -85,7 +88,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
                         logger.warn("Tenant with ID {} not found", tenantId);
                     }
                 } else {
-                    logger.warn("JWT token does not contain tenantId");
+                    logger.warn("JWT token does not contain tenantId for user: {} with role: {}", userEmail, role);
                 }
                 
                 if (role != null) {
