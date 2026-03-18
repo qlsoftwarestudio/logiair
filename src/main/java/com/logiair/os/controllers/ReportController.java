@@ -30,7 +30,7 @@ public class ReportController {
     }
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION', 'CUSTOMER')")
     public ResponseEntity<DashboardResponse> getDashboard() {
         Long tenantId = TenantContext.getCurrentTenantId();
         DashboardResponse dashboard = reportService.getDashboardData(tenantId);
