@@ -23,7 +23,7 @@ public class Customer {
     private String companyName;
 
     @NotBlank
-    @Column(name = "cuit", nullable = false)
+    @Column(name = "tax_id", nullable = false)
     private String taxId;
 
     @NotBlank
