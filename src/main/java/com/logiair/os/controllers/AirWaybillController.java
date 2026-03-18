@@ -6,6 +6,7 @@ import com.logiair.os.dto.response.AirWaybillResponse;
 import com.logiair.os.models.AirWaybillStatus;
 import com.logiair.os.models.Tenant;
 import com.logiair.os.models.User;
+import com.logiair.os.repositories.UserRepository;
 import com.logiair.os.services.AirWaybillService;
 import com.logiair.os.tenant.TenantContext;
 import jakarta.validation.Valid;
@@ -28,9 +29,11 @@ import java.util.List;
 public class AirWaybillController {
 
     private final AirWaybillService airWaybillService;
+    private final UserRepository userRepository;
 
-    public AirWaybillController(AirWaybillService airWaybillService) {
+    public AirWaybillController(AirWaybillService airWaybillService, UserRepository userRepository) {
         this.airWaybillService = airWaybillService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -48,9 +51,11 @@ public class AirWaybillController {
             // Handle case where principal is Spring Security User
             org.springframework.security.core.userdetails.User springUser = 
                 (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-            // You might need to load your User entity from database here
-            // For now, we'll throw an exception to indicate this case
-            throw new IllegalStateException("User authentication mismatch. Principal is Spring User: " + springUser.getUsername());
+            
+            // Load our User entity from database using the username/email
+            String username = springUser.getUsername();
+            user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found in database: " + username));
         }
         
         if (user == null) {
