@@ -42,7 +42,15 @@ public class AirWaybillService {
                 .filter(c -> c.getTenant().getId().equals(tenant.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + request.getCustomerId()));
 
-        AirWaybill airWaybill = airWaybillMapper.toEntity(request);
+        AirWaybill airWaybill = new AirWaybill(); // Create entity manually to avoid validation issues
+        airWaybill.setAwbNumber(request.getAwbNumber());
+        airWaybill.setOperationType(request.getOperationType());
+        airWaybill.setAirline(request.getAirline());
+        airWaybill.setOrigin(request.getOrigin());
+        airWaybill.setDestination(request.getDestination());
+        airWaybill.setArrivalOrDepartureDate(request.getArrivalOrDepartureDate());
+        airWaybill.setObservations(request.getObservations());
+        airWaybill.setManifestNumber(request.getManifestNumber());
         airWaybill.setTenant(tenant);
         airWaybill.setCustomer(customer);
         airWaybill.setCreatedBy(createdBy);
