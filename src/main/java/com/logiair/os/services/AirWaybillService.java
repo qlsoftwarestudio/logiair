@@ -50,7 +50,14 @@ public class AirWaybillService {
 
         AirWaybill airWaybill = new AirWaybill(); // Create entity manually to avoid validation issues
         airWaybill.setAwbNumber(request.getAwbNumber());
-        airWaybill.setOperationType(request.getOperationType());
+        
+        // Map IMPORT to IMPO to match database constraint
+        OperationType operationType = request.getOperationType();
+        if (operationType == OperationType.IMPORT) {
+            operationType = OperationType.IMPO;
+        }
+        airWaybill.setOperationType(operationType);
+        
         airWaybill.setAirline(request.getAirline());
         airWaybill.setOrigin(request.getOrigin());
         airWaybill.setDestination(request.getDestination());

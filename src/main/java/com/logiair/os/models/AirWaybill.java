@@ -57,6 +57,7 @@ public class AirWaybill {
     @Column(columnDefinition = "TEXT")
     private String observations;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
