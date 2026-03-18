@@ -145,15 +145,21 @@ public class AirWaybillService {
     }
 
     public AirWaybillResponse updateAirWaybillStatus(Long id, UpdateAirWaybillStatusRequest request, Long tenantId) {
+        logger.info("Updating status for AirWaybill ID: {} with status: '{}'", id, request.getStatus());
+        
         AirWaybill airWaybill = airWaybillRepository.findById(id)
                 .filter(awb -> awb.getTenant().getId().equals(tenantId))
                 .orElseThrow(() -> new ResourceNotFoundException("Air Waybill not found with id: " + id));
 
+        logger.info("Current status: {}, Requested status: '{}'", airWaybill.getStatus(), request.getStatus());
+
         try {
             AirWaybillStatus newStatus = AirWaybillStatus.valueOf(request.getStatus().toUpperCase());
+            logger.info("Parsed new status: {}", newStatus);
             
             // Validate status transition workflow
             validateStatusTransition(airWaybill.getStatus(), newStatus);
+            logger.info("Status transition validated successfully");
             
             airWaybill.setStatus(newStatus);
             
@@ -226,7 +232,7 @@ public class AirWaybillService {
                 }
                 break;
             case CUSTOMS_PRESENTED:
-                if (newStatus != AirWaybillStatus.MANIFEST_REGISTERED) {
+                if (newStatus != AirWaybillStatus.CUSTOMS_CLEARED && newStatus != AirWaybillStatus.MANIFEST_REGISTERED) {
                     throw new IllegalStateException("Cannot transition from CUSTOMS_PRESENTED to " + newStatus);
                 }
                 break;
