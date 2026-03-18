@@ -2,6 +2,12 @@ spring:
   application:
     name: logiair-os
   
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:logiairdb}
     username: ${DB_USER:postgres}
@@ -9,11 +15,11 @@ spring:
     driver-class-name: org.postgresql.Driver
     # Configuración para persistencia de datos
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 600000
 
   jpa:
     hibernate:

@@ -1,5 +1,6 @@
 package com.logiair.os.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class CustomerResponse {
@@ -10,7 +11,11 @@ public class CustomerResponse {
     private String contactEmail;
     private String contactPhone;
     private String address;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
     // Constructors
