@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +36,26 @@ public class AirWaybillController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS')")
     public ResponseEntity<AirWaybillResponse> createAirWaybill(
-            @Valid @RequestBody AirWaybillRequest request,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody AirWaybillRequest request) {
+        
+        // Get user from SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = null;
+        
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+        } else if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+            // Handle case where principal is Spring Security User
+            org.springframework.security.core.userdetails.User springUser = 
+                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+            // You might need to load your User entity from database here
+            // For now, we'll throw an exception to indicate this case
+            throw new IllegalStateException("User authentication mismatch. Principal is Spring User: " + springUser.getUsername());
+        }
+        
+        if (user == null) {
+            throw new IllegalStateException("No authenticated user found");
+        }
         
         Tenant tenant = TenantContext.getCurrentTenant();
         AirWaybillResponse response = airWaybillService.createAirWaybill(request, user, tenant);
