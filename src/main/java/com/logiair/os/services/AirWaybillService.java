@@ -8,6 +8,8 @@ import com.logiair.os.mappers.AirWaybillMapper;
 import com.logiair.os.models.*;
 import com.logiair.os.repositories.AirWaybillRepository;
 import com.logiair.os.repositories.CustomerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,8 @@ import java.util.List;
 @Service
 @Transactional
 public class AirWaybillService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AirWaybillService.class);
 
     private final AirWaybillRepository airWaybillRepository;
     private final CustomerRepository customerRepository;
@@ -33,6 +37,8 @@ public class AirWaybillService {
     }
 
     public AirWaybillResponse createAirWaybill(AirWaybillRequest request, User createdBy, Tenant tenant) {
+        logger.info("Creating AirWaybill with user: {}, tenant: {}", createdBy != null ? createdBy.getName() : "NULL", tenant != null ? tenant.getName() : "NULL");
+        
         // Check if AWB number already exists for this tenant
         if (airWaybillRepository.existsByAwbNumberAndTenantId(request.getAwbNumber(), tenant.getId())) {
             throw new IllegalArgumentException("Air Waybill with number " + request.getAwbNumber() + " already exists");
@@ -55,6 +61,8 @@ public class AirWaybillService {
         airWaybill.setCustomer(customer);
         airWaybill.setCreatedBy(createdBy);
         airWaybill.setStatus(AirWaybillStatus.PRE_ALERT); // Default status
+        
+        logger.info("About to save AirWaybill, createdBy: {}", airWaybill.getCreatedBy());
 
         AirWaybill savedAirWaybill = airWaybillRepository.save(airWaybill);
         return airWaybillMapper.toResponse(savedAirWaybill);
