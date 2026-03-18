@@ -1,5 +1,6 @@
 package com.logiair.os.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.AirWaybillStatus;
 import com.logiair.os.models.OperationType;
 import jakarta.validation.constraints.NotBlank;
@@ -26,6 +27,7 @@ public class AirWaybillRequest {
     
     @NotNull(message = "Arrival/Departure date is required")
     @FutureOrPresent(message = "Date cannot be in the past")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime arrivalOrDepartureDate;
     
     @NotNull(message = "Customer ID is required")

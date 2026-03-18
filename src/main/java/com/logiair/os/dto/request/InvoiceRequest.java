@@ -1,5 +1,6 @@
 package com.logiair.os.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.InvoiceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ public class InvoiceRequest {
     private String invoiceNumber;
     
     @NotNull(message = "Invoice date is required")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate invoiceDate;
     
     @NotNull(message = "Customer ID is required")

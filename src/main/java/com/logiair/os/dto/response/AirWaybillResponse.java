@@ -1,5 +1,6 @@
 package com.logiair.os.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.AirWaybillStatus;
 import com.logiair.os.models.OperationType;
 
@@ -12,13 +13,20 @@ public class AirWaybillResponse {
     private String airline;
     private String origin;
     private String destination;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime arrivalOrDepartureDate;
+    
     private AirWaybillStatus status;
     private String manifestNumber;
     private String observations;
     private CustomerResponse customer;
     private String createdBy;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
     // Constructors

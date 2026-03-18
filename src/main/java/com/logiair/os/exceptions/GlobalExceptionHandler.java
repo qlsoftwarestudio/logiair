@@ -1,5 +1,6 @@
 package com.logiair.os.exceptions;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -99,6 +100,7 @@ public class GlobalExceptionHandler {
     }
 
     public record ErrorResponse(
+            @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
             LocalDateTime timestamp,
             int status,
             String message,

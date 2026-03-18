@@ -1,5 +1,6 @@
 package com.logiair.os.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.InvoiceStatus;
 
 import java.math.BigDecimal;
@@ -9,14 +10,22 @@ import java.util.List;
 public class InvoiceResponse {
     private Long id;
     private String invoiceNumber;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate invoiceDate;
+    
     private BigDecimal totalAmount;
     private InvoiceStatus status;
     private String observations;
     private CustomerResponse customer;
     private String createdBy;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate updatedAt;
+    
     private List<InvoiceItemResponse> items;
 
     // Constructors
