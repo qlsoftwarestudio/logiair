@@ -2,6 +2,7 @@ package com.logiair.os.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,9 @@ public class JacksonConfig {
         
         // Enable case-insensitive enum deserialization
         mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+        
+        // Register Java 8 time module
+        mapper.registerModule(new JavaTimeModule());
         
         return mapper;
     }
