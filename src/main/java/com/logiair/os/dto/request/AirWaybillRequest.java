@@ -34,13 +34,15 @@ public class AirWaybillRequest {
     private Long customerId;
     
     private String observations;
+    
+    private String manifestNumber;
 
     // Constructors
     public AirWaybillRequest() {}
 
     public AirWaybillRequest(String awbNumber, OperationType operationType, String airline,
                            String origin, String destination, LocalDate arrivalOrDepartureDate,
-                           Long customerId, String observations) {
+                           Long customerId, String observations, String manifestNumber) {
         this.awbNumber = awbNumber;
         this.operationType = operationType;
         this.airline = airline;
@@ -49,6 +51,7 @@ public class AirWaybillRequest {
         this.arrivalOrDepartureDate = arrivalOrDepartureDate;
         this.customerId = customerId;
         this.observations = observations;
+        this.manifestNumber = manifestNumber;
     }
 
     // Getters and Setters
@@ -75,4 +78,7 @@ public class AirWaybillRequest {
     
     public String getObservations() { return observations; }
     public void setObservations(String observations) { this.observations = observations; }
+    
+    public String getManifestNumber() { return manifestNumber; }
+    public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
 }
