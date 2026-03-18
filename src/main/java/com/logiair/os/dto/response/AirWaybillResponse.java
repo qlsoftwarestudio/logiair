@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.AirWaybillStatus;
 import com.logiair.os.models.OperationType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class AirWaybillResponse {
@@ -14,8 +15,8 @@ public class AirWaybillResponse {
     private String origin;
     private String destination;
     
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime arrivalOrDepartureDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate arrivalOrDepartureDate;
     
     private AirWaybillStatus status;
     private String manifestNumber;
@@ -33,7 +34,7 @@ public class AirWaybillResponse {
     public AirWaybillResponse() {}
 
     public AirWaybillResponse(Long id, String awbNumber, OperationType operationType, String airline,
-                             String origin, String destination, LocalDateTime arrivalOrDepartureDate,
+                             String origin, String destination, LocalDate arrivalOrDepartureDate,
                              AirWaybillStatus status, String manifestNumber, String observations,
                              CustomerResponse customer, String createdBy, LocalDateTime createdAt,
                              LocalDateTime updatedAt) {
@@ -72,8 +73,8 @@ public class AirWaybillResponse {
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
     
-    public LocalDateTime getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
-    public void setArrivalOrDepartureDate(LocalDateTime arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
+    public LocalDate getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
+    public void setArrivalOrDepartureDate(LocalDate arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
     
     public AirWaybillStatus getStatus() { return status; }
     public void setStatus(AirWaybillStatus status) { this.status = status; }

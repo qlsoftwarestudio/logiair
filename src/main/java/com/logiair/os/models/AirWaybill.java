@@ -3,6 +3,7 @@ package com.logiair.os.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -43,7 +44,7 @@ public class AirWaybill {
 
     @NotNull
     @Column(name = "arrival_or_departure_date")
-    private LocalDateTime arrivalOrDepartureDate;
+    private LocalDate arrivalOrDepartureDate;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -70,7 +71,7 @@ public class AirWaybill {
     public AirWaybill() {}
 
     public AirWaybill(String awbNumber, OperationType operationType, String airline, 
-                     String origin, String destination, LocalDateTime arrivalOrDepartureDate,
+                     String origin, String destination, LocalDate arrivalOrDepartureDate,
                      AirWaybillStatus status, Customer customer, User createdBy, Tenant tenant) {
         this.awbNumber = awbNumber;
         this.operationType = operationType;
@@ -101,8 +102,8 @@ public class AirWaybill {
     public void setOrigin(String origin) { this.origin = origin; }
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
-    public LocalDateTime getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
-    public void setArrivalOrDepartureDate(LocalDateTime arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
+    public LocalDate getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
+    public void setArrivalOrDepartureDate(LocalDate arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
     public AirWaybillStatus getStatus() { return status; }
     public void setStatus(AirWaybillStatus status) { this.status = status; }
     public String getManifestNumber() { return manifestNumber; }

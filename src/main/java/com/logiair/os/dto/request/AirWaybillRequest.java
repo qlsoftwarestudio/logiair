@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.FutureOrPresent;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class AirWaybillRequest {
     @NotBlank(message = "AWB number is required")
@@ -27,8 +27,8 @@ public class AirWaybillRequest {
     
     @NotNull(message = "Arrival/Departure date is required")
     @FutureOrPresent(message = "Date cannot be in the past")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime arrivalOrDepartureDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate arrivalOrDepartureDate;
     
     @NotNull(message = "Customer ID is required")
     private Long customerId;
@@ -39,7 +39,7 @@ public class AirWaybillRequest {
     public AirWaybillRequest() {}
 
     public AirWaybillRequest(String awbNumber, OperationType operationType, String airline,
-                           String origin, String destination, LocalDateTime arrivalOrDepartureDate,
+                           String origin, String destination, LocalDate arrivalOrDepartureDate,
                            Long customerId, String observations) {
         this.awbNumber = awbNumber;
         this.operationType = operationType;
@@ -67,8 +67,8 @@ public class AirWaybillRequest {
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
     
-    public LocalDateTime getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
-    public void setArrivalOrDepartureDate(LocalDateTime arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
+    public LocalDate getArrivalOrDepartureDate() { return arrivalOrDepartureDate; }
+    public void setArrivalOrDepartureDate(LocalDate arrivalOrDepartureDate) { this.arrivalOrDepartureDate = arrivalOrDepartureDate; }
     
     public Long getCustomerId() { return customerId; }
     public void setCustomerId(Long customerId) { this.customerId = customerId; }
