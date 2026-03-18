@@ -8,36 +8,39 @@ public class CustomerRequest {
     @NotBlank(message = "Company name is required")
     private String companyName;
     
-    @NotBlank(message = "CUIT is required")
-    private String cuit;
+    @NotBlank(message = "Tax ID is required")
+    private String taxId;
     
-    @NotBlank(message = "Contact is required")
-    private String contact;
+    @NotBlank(message = "Contact name is required")
+    private String contactName;
     
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "Contact email is required")
     @Email(message = "Invalid email format")
-    private String email;
+    private String contactEmail;
+    
+    @NotBlank(message = "Contact phone is required")
+    private String contactPhone;
+    
+    private String address;
 
-    // Constructors
     public CustomerRequest() {}
-
-    public CustomerRequest(String companyName, String cuit, String contact, String email) {
-        this.companyName = companyName;
-        this.cuit = cuit;
-        this.contact = contact;
-        this.email = email;
-    }
 
     // Getters and Setters
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     
-    public String getCuit() { return cuit; }
-    public void setCuit(String cuit) { this.cuit = cuit; }
+    public String getTaxId() { return taxId; }
+    public void setTaxId(String taxId) { this.taxId = taxId; }
     
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
+    public String getContactName() { return contactName; }
+    public void setContactName(String contactName) { this.contactName = contactName; }
     
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+    
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+    
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 }

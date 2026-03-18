@@ -23,15 +23,23 @@ public class Customer {
     private String companyName;
 
     @NotBlank
-    @Column(name = "cuit", nullable = false, unique = true)
-    private String cuit;
+    @Column(name = "tax_id", nullable = false)
+    private String taxId;
 
     @NotBlank
-    private String contact;
+    @Column(name = "contact_name", nullable = false)
+    private String contactName;
 
     @NotBlank
     @Email
-    private String email;
+    @Column(name = "contact_email", nullable = false)
+    private String contactEmail;
+
+    @NotBlank
+    @Column(name = "contact_phone", nullable = false)
+    private String contactPhone;
+
+    private String address;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -46,11 +54,13 @@ public class Customer {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Customer(String companyName, String cuit, String contact, String email, Tenant tenant) {
+    public Customer(String companyName, String taxId, String contactName, String contactEmail, String contactPhone, String address, Tenant tenant) {
         this.companyName = companyName;
-        this.cuit = cuit;
-        this.contact = contact;
-        this.email = email;
+        this.taxId = taxId;
+        this.contactName = contactName;
+        this.contactEmail = contactEmail;
+        this.contactPhone = contactPhone;
+        this.address = address;
         this.tenant = tenant;
     }
 
@@ -58,12 +68,16 @@ public class Customer {
     public Long getId() { return id; }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
-    public String getCuit() { return cuit; }
-    public void setCuit(String cuit) { this.cuit = cuit; }
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getTaxId() { return taxId; }
+    public void setTaxId(String taxId) { this.taxId = taxId; }
+    public String getContactName() { return contactName; }
+    public void setContactName(String contactName) { this.contactName = contactName; }
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
     public Tenant getTenant() { return tenant; }
     public void setTenant(Tenant tenant) { this.tenant = tenant; }
     public LocalDateTime getCreatedAt() { return createdAt; }

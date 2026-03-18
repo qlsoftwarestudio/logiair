@@ -5,22 +5,27 @@ import java.time.LocalDateTime;
 public class CustomerResponse {
     private Long id;
     private String companyName;
-    private String cuit;
-    private String contact;
-    private String email;
+    private String taxId;
+    private String contactName;
+    private String contactEmail;
+    private String contactPhone;
+    private String address;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Constructors
     public CustomerResponse() {}
 
-    public CustomerResponse(Long id, String companyName, String cuit, String contact, 
-                           String email, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CustomerResponse(Long id, String companyName, String taxId, String contactName, 
+                           String contactEmail, String contactPhone, String address,
+                           LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.companyName = companyName;
-        this.cuit = cuit;
-        this.contact = contact;
-        this.email = email;
+        this.taxId = taxId;
+        this.contactName = contactName;
+        this.contactEmail = contactEmail;
+        this.contactPhone = contactPhone;
+        this.address = address;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -32,14 +37,20 @@ public class CustomerResponse {
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     
-    public String getCuit() { return cuit; }
-    public void setCuit(String cuit) { this.cuit = cuit; }
+    public String getTaxId() { return taxId; }
+    public void setTaxId(String taxId) { this.taxId = taxId; }
     
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
+    public String getContactName() { return contactName; }
+    public void setContactName(String contactName) { this.contactName = contactName; }
     
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+    
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+    
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

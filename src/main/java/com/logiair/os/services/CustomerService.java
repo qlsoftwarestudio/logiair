@@ -27,9 +27,9 @@ public class CustomerService {
     }
 
     public CustomerResponse createCustomer(CustomerRequest request, Tenant tenant) {
-        // Check if customer with same CUIT already exists for this tenant
-        if (customerRepository.existsByCuitAndTenantId(request.getCuit(), tenant.getId())) {
-            throw new IllegalArgumentException("Customer with CUIT " + request.getCuit() + " already exists");
+        // Check if customer with same Tax ID already exists for this tenant
+        if (customerRepository.existsByTaxIdAndTenantId(request.getTaxId(), tenant.getId())) {
+            throw new IllegalArgumentException("Customer with Tax ID " + request.getTaxId() + " already exists");
         }
 
         Customer customer = customerMapper.toEntity(request);
@@ -65,10 +65,10 @@ public class CustomerService {
                 .filter(c -> c.getTenant().getId().equals(tenantId))
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
 
-        // Check if another customer with same CUIT exists
-        if (!existingCustomer.getCuit().equals(request.getCuit()) &&
-            customerRepository.existsByCuitAndTenantId(request.getCuit(), tenantId)) {
-            throw new IllegalArgumentException("Customer with CUIT " + request.getCuit() + " already exists");
+        // Check if another customer with same Tax ID exists
+        if (!existingCustomer.getTaxId().equals(request.getTaxId()) &&
+            customerRepository.existsByTaxIdAndTenantId(request.getTaxId(), tenantId)) {
+            throw new IllegalArgumentException("Customer with Tax ID " + request.getTaxId() + " already exists");
         }
 
         customerMapper.updateEntityFromRequest(request, existingCustomer);
