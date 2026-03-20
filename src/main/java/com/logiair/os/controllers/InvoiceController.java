@@ -39,6 +39,10 @@ public class InvoiceController {
             @AuthenticationPrincipal User user) {
         
         Tenant tenant = TenantContext.getCurrentTenant();
+        if (tenant == null) {
+            throw new IllegalStateException("Tenant context not found. Cannot create invoice without tenant context.");
+        }
+        
         InvoiceResponse response = invoiceService.createInvoice(request, user, tenant);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
