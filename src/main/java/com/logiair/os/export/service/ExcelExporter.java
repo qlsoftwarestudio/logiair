@@ -2,6 +2,8 @@ package com.logiair.os.export.service;
 
 import com.logiair.os.export.enums.ReportType;
 import com.logiair.os.export.exception.ExportException;
+import com.logiair.os.dto.response.InvoiceResponse;
+import com.logiair.os.dto.response.InvoiceItemResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,144 @@ public class ExcelExporter {
         } catch (IOException e) {
             throw new ExportException("Error generating Excel file: " + e.getMessage(), e);
         }
+    }
+    
+    public byte[] generateInvoiceExcel(InvoiceResponse invoice) throws ExportException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            
+            Sheet sheet = workbook.createSheet("Factura " + invoice.getInvoiceNumber());
+            
+            int rowNum = createInvoiceSheet(workbook, sheet, invoice);
+            
+            autoSizeColumns(sheet, 4);
+            workbook.write(outputStream);
+            
+            return outputStream.toByteArray();
+            
+        } catch (IOException e) {
+            throw new ExportException("Error generating invoice Excel file: " + e.getMessage(), e);
+        }
+    }
+    
+    private int createInvoiceSheet(XSSFWorkbook workbook, Sheet sheet, InvoiceResponse invoice) {
+        int rowNum = 0;
+        
+        // Título
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("FACTURA");
+        titleCell.setCellStyle(createHeaderStyle(workbook));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 3));
+        
+        rowNum++; // Espacio
+        
+        // Información de la factura
+        rowNum = createInvoiceInfoSection(workbook, sheet, rowNum, invoice);
+        
+        rowNum++; // Espacio
+        
+        // Información del cliente
+        rowNum = createCustomerInfoSection(workbook, sheet, rowNum, invoice);
+        
+        rowNum++; // Espacio
+        
+        // Items de la factura
+        if (invoice.getItems() != null && !invoice.getItems().isEmpty()) {
+            rowNum = createItemsSection(workbook, sheet, rowNum, invoice);
+        }
+        
+        rowNum++; // Espacio
+        
+        // Observaciones
+        if (invoice.getObservations() != null && !invoice.getObservations().trim().isEmpty()) {
+            rowNum = createObservationsSection(workbook, sheet, rowNum, invoice.getObservations());
+            rowNum++; // Espacio
+        }
+        
+        // Total
+        createTotalSection(workbook, sheet, rowNum, invoice);
+        
+        return rowNum;
+    }
+    
+    private int createInvoiceInfoSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, InvoiceResponse invoice) {
+        createSectionTitle(workbook, sheet, rowNum++, "Información de la Factura");
+        
+        addKeyValueRow(workbook, sheet, rowNum++, "Número de Factura:", invoice.getInvoiceNumber());
+        addKeyValueRow(workbook, sheet, rowNum++, "Fecha:", invoice.getInvoiceDate().format(DATE_FORMATTER));
+        addKeyValueRow(workbook, sheet, rowNum++, "Estado:", invoice.getStatus().toString());
+        
+        return rowNum;
+    }
+    
+    private int createCustomerInfoSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, InvoiceResponse invoice) {
+        createSectionTitle(workbook, sheet, rowNum++, "Datos del Cliente");
+        
+        addKeyValueRow(workbook, sheet, rowNum++, "Cliente:", invoice.getCustomer().getCompanyName());
+        
+        return rowNum;
+    }
+    
+    private int createItemsSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, InvoiceResponse invoice) {
+        createSectionTitle(workbook, sheet, rowNum++, "Detalle de Servicios");
+        
+        // Headers
+        Row headerRow = sheet.createRow(rowNum++);
+        headerRow.createCell(0).setCellValue("Cant.");
+        headerRow.createCell(1).setCellValue("Descripción");
+        headerRow.createCell(2).setCellValue("Precio Unitario");
+        headerRow.createCell(3).setCellValue("Total");
+        
+        // Apply header style
+        for (int i = 0; i < 4; i++) {
+            headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
+        }
+        
+        // Items
+        for (InvoiceItemResponse item : invoice.getItems()) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue("1");
+            row.createCell(1).setCellValue(item.getServiceDescription());
+            
+            Cell priceCell = row.createCell(2);
+            priceCell.setCellValue(item.getAmount().doubleValue());
+            priceCell.setCellStyle(createCurrencyStyle(workbook));
+            
+            Cell totalCell = row.createCell(3);
+            totalCell.setCellValue(item.getAmount().doubleValue());
+            totalCell.setCellStyle(createCurrencyStyle(workbook));
+        }
+        
+        return rowNum;
+    }
+    
+    private int createObservationsSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, String observations) {
+        createSectionTitle(workbook, sheet, rowNum++, "Observaciones");
+        
+        Row row = sheet.createRow(rowNum++);
+        Cell obsCell = row.createCell(0);
+        obsCell.setCellValue(observations);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
+        
+        return rowNum;
+    }
+    
+    private void createTotalSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, InvoiceResponse invoice) {
+        Row row = sheet.createRow(rowNum);
+        row.createCell(2).setCellValue("TOTAL:");
+        
+        Cell totalCell = row.createCell(3);
+        totalCell.setCellValue(invoice.getTotalAmount().doubleValue());
+        totalCell.setCellStyle(createHeaderStyle(workbook));
+        totalCell.setCellStyle(createCurrencyStyle(workbook));
+        
+        // Make total bold
+        Font font = workbook.createFont();
+        font.setBold(true);
+        CellStyle totalStyle = createCurrencyStyle(workbook);
+        totalStyle.setFont(font);
+        totalCell.setCellStyle(totalStyle);
     }
     
     private void createDashboardSheet(XSSFWorkbook workbook, Sheet sheet, Map<String, Object> data) {

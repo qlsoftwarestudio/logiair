@@ -35,7 +35,6 @@ public interface AirWaybillMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "manifestNumber", ignore = true)
     void updateEntityFromRequest(AirWaybillRequest request, @MappingTarget AirWaybill airWaybill);
     
     @Named("customerToResponse")

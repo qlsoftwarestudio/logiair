@@ -2,6 +2,8 @@ package com.logiair.os.controllers;
 
 import com.logiair.os.dto.request.InvoiceRequest;
 import com.logiair.os.dto.response.InvoiceResponse;
+import com.logiair.os.export.service.PdfExporter;
+import com.logiair.os.export.service.ExcelExporter;
 import com.logiair.os.models.InvoiceStatus;
 import com.logiair.os.models.Tenant;
 import com.logiair.os.models.User;
@@ -29,10 +31,14 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final UserRepository userRepository;
+    private final PdfExporter pdfExporter;
+    private final ExcelExporter excelExporter;
 
-    public InvoiceController(InvoiceService invoiceService, UserRepository userRepository) {
+    public InvoiceController(InvoiceService invoiceService, UserRepository userRepository, PdfExporter pdfExporter, ExcelExporter excelExporter) {
         this.invoiceService = invoiceService;
         this.userRepository = userRepository;
+        this.pdfExporter = pdfExporter;
+        this.excelExporter = excelExporter;
     }
 
     @PostMapping
@@ -164,12 +170,43 @@ public class InvoiceController {
 
     @GetMapping("/export/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
-    public ResponseEntity<String> exportInvoice(
+    public ResponseEntity<byte[]> exportInvoice(
             @PathVariable Long id,
             @RequestParam(defaultValue = "pdf") String format) {
         
-        // This would generate PDF or Excel export
-        // For now, return a message indicating the feature
-        return ResponseEntity.ok("Invoice export feature would be implemented here for format: " + format);
+        Long tenantId = TenantContext.getCurrentTenantId();
+        InvoiceResponse invoice = invoiceService.getInvoiceById(id, tenantId);
+        
+        byte[] fileContent;
+        String contentType;
+        String fileExtension;
+        String fileName;
+        
+        try {
+            switch (format.toLowerCase()) {
+                case "excel":
+                case "xlsx":
+                    fileContent = excelExporter.generateInvoiceExcel(invoice);
+                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    fileExtension = "xlsx";
+                    break;
+                case "pdf":
+                default:
+                    fileContent = pdfExporter.generateInvoicePdf(invoice);
+                    contentType = "application/pdf";
+                    fileExtension = "pdf";
+                    break;
+            }
+            
+            fileName = "Factura_" + invoice.getInvoiceNumber() + "." + fileExtension;
+            
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .body(fileContent);
+                    
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating " + format.toUpperCase() + ": " + e.getMessage(), e);
+        }
     }
 }
