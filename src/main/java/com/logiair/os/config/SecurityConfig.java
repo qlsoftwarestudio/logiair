@@ -33,7 +33,7 @@ public class SecurityConfig {
                         .configurationSource(corsConfigurationSource)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/health", "/actuator/health").permitAll()
+                        .requestMatchers("/api/auth/**", "/auth/**", "/health", "/actuator/health").permitAll()
                         .requestMatchers("/api/reports/dashboard").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS", "ADMINISTRATION", "CUSTOMER")
                         .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "ADMINISTRATION")
                         .requestMatchers(HttpMethod.GET, "/api/customers/**").hasAnyRole("ADMIN", "OPERATOR_LOGISTICS", "ADMINISTRATION")
