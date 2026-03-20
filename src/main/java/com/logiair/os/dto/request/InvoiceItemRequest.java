@@ -16,7 +16,6 @@ public class InvoiceItemRequest {
     @Positive(message = "Agency commission must be positive")
     private BigDecimal agencyCommission;
     
-    @NotNull(message = "Air waybill ID is required")
     private Long airWaybillId;
 
     // Constructors

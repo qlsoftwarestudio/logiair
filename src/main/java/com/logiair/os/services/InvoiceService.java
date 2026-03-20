@@ -194,6 +194,16 @@ public class InvoiceService {
         return invoiceMapper.toResponse(updatedInvoice);
     }
 
+    public InvoiceResponse updateInvoiceStatus(Long id, InvoiceStatus status, Long tenantId) {
+        Invoice invoice = invoiceRepository.findById(id)
+                .filter(inv -> inv.getTenant().getId().equals(tenantId))
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
+
+        invoice.setStatus(status);
+        Invoice updatedInvoice = invoiceRepository.save(invoice);
+        return invoiceMapper.toResponse(updatedInvoice);
+    }
+
     public void deleteInvoice(Long id, Long tenantId) {
         Invoice invoice = invoiceRepository.findById(id)
                 .filter(inv -> inv.getTenant().getId().equals(tenantId))
@@ -235,16 +245,19 @@ public class InvoiceService {
 
     private InvoiceItem createInvoiceItem(com.logiair.os.dto.request.InvoiceItemRequest request, Invoice invoice, Tenant tenant) {
         logger.info("Creating invoice item for airWaybillId: {}", request.getAirWaybillId());
-        
-        AirWaybill airWaybill = airWaybillRepository.findById(request.getAirWaybillId())
-                .filter(awb -> awb.getTenant().getId().equals(tenant.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Air Waybill not found with id: " + request.getAirWaybillId()));
-
-        logger.info("Found airWaybill: {} for invoice item creation", airWaybill.getAwbNumber());
 
         InvoiceItem item = invoiceMapper.toItemEntity(request);
         item.setInvoice(invoice);
-        item.setAirWaybill(airWaybill);
+        
+        // Set AirWaybill only if airWaybillId is provided
+        if (request.getAirWaybillId() != null) {
+            AirWaybill airWaybill = airWaybillRepository.findById(request.getAirWaybillId())
+                    .filter(awb -> awb.getTenant().getId().equals(tenant.getId()))
+                    .orElseThrow(() -> new ResourceNotFoundException("Air Waybill not found with id: " + request.getAirWaybillId()));
+            
+            logger.info("Found airWaybill: {} for invoice item creation", airWaybill.getAwbNumber());
+            item.setAirWaybill(airWaybill);
+        }
         
         return item;
     }

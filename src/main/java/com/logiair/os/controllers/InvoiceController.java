@@ -1,6 +1,7 @@
 package com.logiair.os.controllers;
 
 import com.logiair.os.dto.request.InvoiceRequest;
+import com.logiair.os.dto.request.UpdateInvoiceStatusRequest;
 import com.logiair.os.dto.response.InvoiceResponse;
 import com.logiair.os.export.service.PdfExporter;
 import com.logiair.os.export.service.ExcelExporter;
@@ -154,6 +155,17 @@ public class InvoiceController {
         Long tenantId = TenantContext.getCurrentTenantId();
         invoiceService.deleteInvoice(id, tenantId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
+    public ResponseEntity<InvoiceResponse> updateInvoiceStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateInvoiceStatusRequest request) {
+        
+        Long tenantId = TenantContext.getCurrentTenantId();
+        InvoiceResponse response = invoiceService.updateInvoiceStatus(id, request.getStatus(), tenantId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/generate-monthly")
