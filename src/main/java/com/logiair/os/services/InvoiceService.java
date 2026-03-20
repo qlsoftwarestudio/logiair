@@ -57,6 +57,14 @@ public class InvoiceService {
         invoice.setCustomer(customer);
         invoice.setCreatedBy(createdBy);
 
+        // Set all required fields before validation
+        if (request.getInvoiceDate() == null) {
+            invoice.setInvoiceDate(LocalDate.now());
+        }
+        if (invoice.getTotalAmount() == null) {
+            invoice.setTotalAmount(BigDecimal.ZERO);
+        }
+
         Invoice savedInvoice = invoiceRepository.save(invoice);
         final Invoice finalSavedInvoice = savedInvoice;
         final Tenant finalTenant = tenant;
