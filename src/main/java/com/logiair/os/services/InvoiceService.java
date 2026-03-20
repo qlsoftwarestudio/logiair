@@ -7,6 +7,8 @@ import com.logiair.os.exceptions.ResourceNotFoundException;
 import com.logiair.os.mappers.InvoiceMapper;
 import com.logiair.os.models.*;
 import com.logiair.os.repositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class InvoiceService {
+
+    private static final Logger logger = LoggerFactory.getLogger(InvoiceService.class);
 
     private final InvoiceRepository invoiceRepository;
     private final InvoiceItemRepository invoiceItemRepository;
@@ -43,6 +47,21 @@ public class InvoiceService {
     }
 
     public InvoiceResponse createInvoice(InvoiceRequest request, User createdBy, Tenant tenant) {
+        logger.info("Creating invoice with request: {}, user: {}, tenant: {}", 
+                   request.getInvoiceNumber(), createdBy != null ? createdBy.getEmail() : "null", 
+                   tenant != null ? tenant.getName() : "null");
+
+        // Validaciones de null
+        if (request == null) {
+            throw new IllegalArgumentException("Invoice request cannot be null");
+        }
+        if (createdBy == null) {
+            throw new IllegalArgumentException("Created by user cannot be null");
+        }
+        if (tenant == null) {
+            throw new IllegalArgumentException("Tenant cannot be null");
+        }
+
         // Check if invoice number already exists for this tenant
         if (invoiceRepository.existsByInvoiceNumberAndTenantId(request.getInvoiceNumber(), tenant.getId())) {
             throw new IllegalArgumentException("Invoice with number " + request.getInvoiceNumber() + " already exists");
@@ -51,6 +70,8 @@ public class InvoiceService {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .filter(c -> c.getTenant().getId().equals(tenant.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + request.getCustomerId()));
+
+        logger.info("Found customer: {} for invoice creation", customer.getCompanyName());
 
         Invoice invoice = invoiceMapper.toEntity(request);
         invoice.setTenant(tenant);
@@ -65,7 +86,9 @@ public class InvoiceService {
             invoice.setTotalAmount(BigDecimal.ZERO);
         }
 
+        logger.info("Saving invoice with number: {}", invoice.getInvoiceNumber());
         Invoice savedInvoice = invoiceRepository.save(invoice);
+        logger.info("Invoice saved with ID: {}", savedInvoice.getId());
         final Invoice finalSavedInvoice = savedInvoice;
         final Tenant finalTenant = tenant;
 
@@ -211,9 +234,13 @@ public class InvoiceService {
     }
 
     private InvoiceItem createInvoiceItem(com.logiair.os.dto.request.InvoiceItemRequest request, Invoice invoice, Tenant tenant) {
+        logger.info("Creating invoice item for airWaybillId: {}", request.getAirWaybillId());
+        
         AirWaybill airWaybill = airWaybillRepository.findById(request.getAirWaybillId())
                 .filter(awb -> awb.getTenant().getId().equals(tenant.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Air Waybill not found with id: " + request.getAirWaybillId()));
+
+        logger.info("Found airWaybill: {} for invoice item creation", airWaybill.getAwbNumber());
 
         InvoiceItem item = invoiceMapper.toItemEntity(request);
         item.setInvoice(invoice);
