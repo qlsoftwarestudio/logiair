@@ -7,6 +7,7 @@ import com.logiair.os.models.Tenant;
 import com.logiair.os.models.User;
 import com.logiair.os.services.InvoiceService;
 import com.logiair.os.tenant.TenantContext;
+import com.logiair.os.repositories.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,21 +28,34 @@ import java.util.List;
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
+    private final UserRepository userRepository;
 
-    public InvoiceController(InvoiceService invoiceService) {
+    public InvoiceController(InvoiceService invoiceService, UserRepository userRepository) {
         this.invoiceService = invoiceService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
     public ResponseEntity<InvoiceResponse> createInvoice(
-            @Valid @RequestBody InvoiceRequest request,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody InvoiceRequest request) {
         
         Tenant tenant = TenantContext.getCurrentTenant();
         if (tenant == null) {
             throw new IllegalStateException("Tenant context not found. Cannot create invoice without tenant context.");
         }
+        
+        // Obtener usuario autenticado desde SecurityContext
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        String userEmail = auth.getName();
+        com.logiair.os.models.User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found: " + userEmail));
         
         InvoiceResponse response = invoiceService.createInvoice(request, user, tenant);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
