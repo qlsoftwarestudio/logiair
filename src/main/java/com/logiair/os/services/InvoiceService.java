@@ -140,6 +140,30 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
+    public List<InvoiceResponse> getInvoicesByDateRange(Long tenantId, LocalDate startDate, LocalDate endDate, Long customerId) {
+        List<Invoice> invoices;
+        
+        if (customerId != null) {
+            invoices = invoiceRepository.findByCustomerAndDateRange(tenantId, customerId, startDate, endDate);
+        } else {
+            invoices = invoiceRepository.findByDateRange(tenantId, startDate, endDate, 
+                    org.springframework.data.domain.Pageable.unpaged()).getContent();
+        }
+        
+        return invoices.stream()
+                .map(invoiceMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<InvoiceResponse> getMonthlyInvoices(Long tenantId, int month, int year) {
+        List<Invoice> invoices = invoiceRepository.findByMonthAndYear(tenantId, month, year);
+        return invoices.stream()
+                .map(invoiceMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<InvoiceResponse> getMonthlyInvoicesByCustomer(Long tenantId, Long customerId, int month, int year) {
         List<Invoice> invoices = invoiceRepository.findByCustomerAndMonthAndYear(tenantId, customerId, month, year);
         return invoices.stream()

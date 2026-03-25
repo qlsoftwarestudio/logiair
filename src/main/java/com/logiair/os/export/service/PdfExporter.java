@@ -15,12 +15,233 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import java.time.format.DateTimeFormatter;
 
 @Service
 public class PdfExporter {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public byte[] generateDateRangeInvoicesPdf(List<InvoiceResponse> invoices, LocalDate startDate, LocalDate endDate) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        
+        Document document = new Document(new Rectangle(595, 842));
+        PdfWriter.getInstance(document, outputStream);
+        
+        document.open();
+        
+        // Título
+        Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);
+        Paragraph title = new Paragraph("REPORTE DE FACTURAS POR RANGO DE FECHAS", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(10);
+        document.add(title);
+        
+        // Período
+        Font periodFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+        Paragraph period = new Paragraph(
+            "Período: " + startDate.format(DATE_FORMATTER) + " a " + endDate.format(DATE_FORMATTER), 
+            periodFont
+        );
+        period.setAlignment(Element.ALIGN_CENTER);
+        period.setSpacingAfter(20);
+        document.add(period);
+        
+        // Resumen estadístico
+        Font sectionFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+        Font contentFont = new Font(Font.HELVETICA, 10);
+        
+        BigDecimal totalAmount = invoices.stream()
+                .map(InvoiceResponse::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        long paidCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PAID"))
+                .count();
+        
+        long pendingCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PENDING"))
+                .count();
+        
+        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        BigDecimal dailyAverage = totalAmount.divide(BigDecimal.valueOf(daysBetween), 2, java.math.RoundingMode.HALF_UP);
+        
+        Paragraph sectionTitle = new Paragraph("Resumen Estadístico", sectionFont);
+        sectionTitle.setSpacingAfter(10);
+        document.add(sectionTitle);
+        
+        PdfPTable summaryTable = new PdfPTable(2);
+        summaryTable.setWidthPercentage(80);
+        summaryTable.setWidths(new float[]{3f, 1f});
+        
+        summaryTable.addCell(createCell("Total Facturas:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(invoices.size()), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Facturas Pagadas:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(paidCount), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Facturas Pendientes:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(pendingCount), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Monto Total:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell("$" + totalAmount.toString(), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Promedio Diario:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell("$" + dailyAverage.toString(), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.setSpacingAfter(20);
+        document.add(summaryTable);
+        
+        // Tabla de facturas
+        Paragraph invoicesTitle = new Paragraph("Detalle de Facturas", sectionFont);
+        invoicesTitle.setSpacingAfter(10);
+        document.add(invoicesTitle);
+        
+        PdfPTable invoicesTable = new PdfPTable(7);
+        invoicesTable.setWidthPercentage(100);
+        invoicesTable.setWidths(new float[]{1.5f, 1f, 2.5f, 1f, 1f, 1f, 1f});
+        
+        // Headers
+        invoicesTable.addCell(createHeaderCell("N° Factura", contentFont));
+        invoicesTable.addCell(createHeaderCell("Fecha", contentFont));
+        invoicesTable.addCell(createHeaderCell("Cliente", contentFont));
+        invoicesTable.addCell(createHeaderCell("Estado", contentFont));
+        invoicesTable.addCell(createHeaderCell("Items", contentFont));
+        invoicesTable.addCell(createHeaderCell("Total", contentFont));
+        invoicesTable.addCell(createHeaderCell("Días", contentFont));
+        
+        // Data
+        for (InvoiceResponse invoice : invoices) {
+            invoicesTable.addCell(createCell(invoice.getInvoiceNumber(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getInvoiceDate().format(DATE_FORMATTER), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getCustomer().getCompanyName(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getStatus().toString(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(String.valueOf(invoice.getItems() != null ? invoice.getItems().size() : 0), contentFont, Element.ALIGN_CENTER, false));
+            invoicesTable.addCell(createCell("$" + invoice.getTotalAmount().toString(), contentFont, Element.ALIGN_RIGHT, false));
+            
+            long daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(invoice.getInvoiceDate(), LocalDate.now());
+            invoicesTable.addCell(createCell(String.valueOf(daysElapsed), contentFont, Element.ALIGN_CENTER, false));
+        }
+        
+        document.add(invoicesTable);
+        
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateMonthlyInvoicesPdf(List<InvoiceResponse> invoices, int month, int year) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        
+        Document document = new Document(new Rectangle(595, 842));
+        PdfWriter.getInstance(document, outputStream);
+        
+        document.open();
+        
+        // Título
+        Font titleFont = new Font(Font.HELVETICA, 16, Font.BOLD);
+        Paragraph title = new Paragraph("REPORTE MENSUAL DE FACTURAS", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(10);
+        document.add(title);
+        
+        // Período
+        Font periodFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+        Paragraph period = new Paragraph("Período: " + getMonthName(month) + " " + year, periodFont);
+        period.setAlignment(Element.ALIGN_CENTER);
+        period.setSpacingAfter(20);
+        document.add(period);
+        
+        // Resumen
+        Font sectionFont = new Font(Font.HELVETICA, 12, Font.BOLD);
+        Font contentFont = new Font(Font.HELVETICA, 10);
+        
+        BigDecimal totalAmount = invoices.stream()
+                .map(InvoiceResponse::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        long paidCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PAID"))
+                .count();
+        
+        long pendingCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PENDING"))
+                .count();
+        
+        Paragraph sectionTitle = new Paragraph("Resumen", sectionFont);
+        sectionTitle.setSpacingAfter(10);
+        document.add(sectionTitle);
+        
+        PdfPTable summaryTable = new PdfPTable(2);
+        summaryTable.setWidthPercentage(80);
+        summaryTable.setWidths(new float[]{3f, 1f});
+        
+        summaryTable.addCell(createCell("Total Facturas:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(invoices.size()), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Facturas Pagadas:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(paidCount), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Facturas Pendientes:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell(String.valueOf(pendingCount), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.addCell(createCell("Monto Total:", contentFont, Element.ALIGN_LEFT, true));
+        summaryTable.addCell(createCell("$" + totalAmount.toString(), contentFont, Element.ALIGN_RIGHT, false));
+        
+        summaryTable.setSpacingAfter(20);
+        document.add(summaryTable);
+        
+        // Tabla de facturas
+        Paragraph invoicesTitle = new Paragraph("Detalle de Facturas", sectionFont);
+        invoicesTitle.setSpacingAfter(10);
+        document.add(invoicesTitle);
+        
+        PdfPTable invoicesTable = new PdfPTable(6);
+        invoicesTable.setWidthPercentage(100);
+        invoicesTable.setWidths(new float[]{2f, 1.5f, 3f, 1.5f, 1.5f, 2f});
+        
+        // Headers
+        invoicesTable.addCell(createHeaderCell("N° Factura", contentFont));
+        invoicesTable.addCell(createHeaderCell("Fecha", contentFont));
+        invoicesTable.addCell(createHeaderCell("Cliente", contentFont));
+        invoicesTable.addCell(createHeaderCell("Estado", contentFont));
+        invoicesTable.addCell(createHeaderCell("Items", contentFont));
+        invoicesTable.addCell(createHeaderCell("Total", contentFont));
+        
+        // Data
+        for (InvoiceResponse invoice : invoices) {
+            invoicesTable.addCell(createCell(invoice.getInvoiceNumber(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getInvoiceDate().format(DATE_FORMATTER), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getCustomer().getCompanyName(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(invoice.getStatus().toString(), contentFont, Element.ALIGN_LEFT, false));
+            invoicesTable.addCell(createCell(String.valueOf(invoice.getItems() != null ? invoice.getItems().size() : 0), contentFont, Element.ALIGN_CENTER, false));
+            invoicesTable.addCell(createCell("$" + invoice.getTotalAmount().toString(), contentFont, Element.ALIGN_RIGHT, false));
+        }
+        
+        document.add(invoicesTable);
+        
+        document.close();
+        return outputStream.toByteArray();
+    }
+    
+    private String getMonthName(int month) {
+        return switch (month) {
+            case 1 -> "Enero";
+            case 2 -> "Febrero";
+            case 3 -> "Marzo";
+            case 4 -> "Abril";
+            case 5 -> "Mayo";
+            case 6 -> "Junio";
+            case 7 -> "Julio";
+            case 8 -> "Agosto";
+            case 9 -> "Septiembre";
+            case 10 -> "Octubre";
+            case 11 -> "Noviembre";
+            case 12 -> "Diciembre";
+            default -> "Mes " + month;
+        };
+    }
 
     public byte[] generateInvoicePdf(InvoiceResponse invoice) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

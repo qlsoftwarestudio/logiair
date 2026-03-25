@@ -46,6 +46,288 @@ public class ExcelExporter {
         }
     }
     
+    public byte[] generateDateRangeInvoicesExcel(List<InvoiceResponse> invoices, LocalDate startDate, LocalDate endDate, boolean includeCharts) throws ExportException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            
+            Sheet sheet = workbook.createSheet("Facturas por Rango de Fechas");
+            
+            int rowNum = createDateRangeInvoicesSheet(workbook, sheet, invoices, startDate, endDate, includeCharts);
+            
+            autoSizeColumns(sheet, 7);
+            workbook.write(outputStream);
+            
+            return outputStream.toByteArray();
+            
+        } catch (IOException e) {
+            throw new ExportException("Error generating date range invoices Excel file: " + e.getMessage(), e);
+        }
+    }
+    
+    private int createDateRangeInvoicesSheet(XSSFWorkbook workbook, Sheet sheet, List<InvoiceResponse> invoices, LocalDate startDate, LocalDate endDate, boolean includeCharts) {
+        int rowNum = 0;
+        
+        // Título
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("REPORTE DE FACTURAS POR RANGO DE FECHAS");
+        titleCell.setCellStyle(createHeaderStyle(workbook));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 6));
+        
+        rowNum++; // Espacio
+        
+        // Período
+        createSectionTitle(workbook, sheet, rowNum++, 
+            "Período: " + startDate.format(DATE_FORMATTER) + " a " + endDate.format(DATE_FORMATTER));
+        
+        rowNum++; // Espacio
+        
+        // Resumen estadístico
+        createSectionTitle(workbook, sheet, rowNum++, "Resumen Estadístico");
+        
+        BigDecimal totalAmount = invoices.stream()
+                .map(InvoiceResponse::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        long paidCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PAID"))
+                .count();
+        
+        long pendingCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PENDING"))
+                .count();
+        
+        // Calcular promedio diario
+        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        BigDecimal dailyAverage = totalAmount.divide(BigDecimal.valueOf(daysBetween), 2, java.math.RoundingMode.HALF_UP);
+        
+        addKeyValueRow(workbook, sheet, rowNum++, "Total Facturas:", invoices.size());
+        addKeyValueRow(workbook, sheet, rowNum++, "Facturas Pagadas:", paidCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Facturas Pendientes:", pendingCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Monto Total:", totalAmount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Promedio Diario:", dailyAverage);
+        
+        rowNum++; // Espacio
+        
+        // Tabla de facturas
+        createSectionTitle(workbook, sheet, rowNum++, "Detalle de Facturas");
+        
+        // Headers
+        Row headerRow = sheet.createRow(rowNum++);
+        headerRow.createCell(0).setCellValue("N° Factura");
+        headerRow.createCell(1).setCellValue("Fecha");
+        headerRow.createCell(2).setCellValue("Cliente");
+        headerRow.createCell(3).setCellValue("Estado");
+        headerRow.createCell(4).setCellValue("Cantidad Items");
+        headerRow.createCell(5).setCellValue("Total");
+        headerRow.createCell(6).setCellValue("Días Transcurridos");
+        
+        // Apply header style
+        for (int i = 0; i < 7; i++) {
+            headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
+        }
+        
+        // Data
+        for (InvoiceResponse invoice : invoices) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(invoice.getInvoiceNumber());
+            row.createCell(1).setCellValue(invoice.getInvoiceDate().format(DATE_FORMATTER));
+            row.createCell(2).setCellValue(invoice.getCustomer().getCompanyName());
+            row.createCell(3).setCellValue(invoice.getStatus().toString());
+            row.createCell(4).setCellValue(invoice.getItems() != null ? invoice.getItems().size() : 0);
+            
+            Cell amountCell = row.createCell(5);
+            amountCell.setCellValue(invoice.getTotalAmount().doubleValue());
+            amountCell.setCellStyle(createCurrencyStyle(workbook));
+            
+            // Días transcurridos desde la fecha de la factura
+            long daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(invoice.getInvoiceDate(), LocalDate.now());
+            row.createCell(6).setCellValue(daysElapsed);
+            
+            // Colorear según estado
+            if (invoice.getStatus().toString().equals("PENDING")) {
+                for (int i = 0; i < 7; i++) {
+                    row.getCell(i).setCellStyle(createPendingStyle(workbook));
+                }
+            }
+        }
+        
+        // Si se incluyen gráficos, añadir hoja de resumen visual
+        if (includeCharts) {
+            createChartsSheet(workbook, invoices, startDate, endDate);
+        }
+        
+        return rowNum;
+    }
+    
+    private void createChartsSheet(XSSFWorkbook workbook, List<InvoiceResponse> invoices, LocalDate startDate, LocalDate endDate) {
+        Sheet chartSheet = workbook.createSheet("Gráficos y Análisis");
+        int rowNum = 0;
+        
+        // Título
+        Row titleRow = chartSheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("ANÁLISIS VISUAL DE FACTURAS");
+        titleCell.setCellStyle(createHeaderStyle(workbook));
+        chartSheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 3));
+        
+        rowNum += 2;
+        
+        // Distribución por estado
+        createSectionTitle(workbook, chartSheet, rowNum++, "Distribución por Estado");
+        
+        long paidCount = invoices.stream().filter(i -> i.getStatus().toString().equals("PAID")).count();
+        long pendingCount = invoices.stream().filter(i -> i.getStatus().toString().equals("PENDING")).count();
+        
+        addKeyValueRow(workbook, chartSheet, rowNum++, "Pagadas:", paidCount);
+        addKeyValueRow(workbook, chartSheet, rowNum++, "Pendientes:", pendingCount);
+        
+        rowNum += 2;
+        
+        // Top 5 clientes por monto
+        createSectionTitle(workbook, chartSheet, rowNum++, "Top 5 Clientes por Monto");
+        
+        Map<String, BigDecimal> customerTotals = invoices.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                    i -> i.getCustomer().getCompanyName(),
+                    java.util.stream.Collectors.reducing(BigDecimal.ZERO, InvoiceResponse::getTotalAmount, BigDecimal::add)
+                ));
+        
+        final int[] currentRow = {rowNum};
+        customerTotals.entrySet().stream()
+                .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
+                .limit(5)
+                .forEach(entry -> {
+                    addKeyValueRow(workbook, chartSheet, currentRow[0], entry.getKey(), entry.getValue());
+                    currentRow[0]++;
+                });
+        rowNum = currentRow[0];
+    }
+    
+    private CellStyle createPendingStyle(XSSFWorkbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+    
+    public byte[] generateMonthlyInvoicesExcel(List<InvoiceResponse> invoices, int month, int year) throws ExportException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            
+            Sheet sheet = workbook.createSheet("Facturas Mensuales");
+            
+            int rowNum = createMonthlyInvoicesSheet(workbook, sheet, invoices, month, year);
+            
+            autoSizeColumns(sheet, 7);
+            workbook.write(outputStream);
+            
+            return outputStream.toByteArray();
+            
+        } catch (IOException e) {
+            throw new ExportException("Error generating monthly invoices Excel file: " + e.getMessage(), e);
+        }
+    }
+    
+    private int createMonthlyInvoicesSheet(XSSFWorkbook workbook, Sheet sheet, List<InvoiceResponse> invoices, int month, int year) {
+        int rowNum = 0;
+        
+        // Título
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("REPORTE MENSUAL DE FACTURAS");
+        titleCell.setCellStyle(createHeaderStyle(workbook));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 6));
+        
+        rowNum++; // Espacio
+        
+        // Período
+        createSectionTitle(workbook, sheet, rowNum++, "Período: " + getMonthName(month) + " " + year);
+        
+        rowNum++; // Espacio
+        
+        // Resumen
+        createSectionTitle(workbook, sheet, rowNum++, "Resumen");
+        
+        BigDecimal totalAmount = invoices.stream()
+                .map(InvoiceResponse::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        long paidCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PAID"))
+                .count();
+        
+        long pendingCount = invoices.stream()
+                .filter(i -> i.getStatus().toString().equals("PENDING"))
+                .count();
+        
+        addKeyValueRow(workbook, sheet, rowNum++, "Total Facturas:", invoices.size());
+        addKeyValueRow(workbook, sheet, rowNum++, "Facturas Pagadas:", paidCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Facturas Pendientes:", pendingCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Monto Total:", totalAmount);
+        
+        rowNum++; // Espacio
+        
+        // Tabla de facturas
+        createSectionTitle(workbook, sheet, rowNum++, "Detalle de Facturas");
+        
+        // Headers
+        Row headerRow = sheet.createRow(rowNum++);
+        headerRow.createCell(0).setCellValue("N° Factura");
+        headerRow.createCell(1).setCellValue("Fecha");
+        headerRow.createCell(2).setCellValue("Cliente");
+        headerRow.createCell(3).setCellValue("Estado");
+        headerRow.createCell(4).setCellValue("Cantidad Items");
+        headerRow.createCell(5).setCellValue("Total");
+        headerRow.createCell(6).setCellValue("Observaciones");
+        
+        // Apply header style
+        for (int i = 0; i < 7; i++) {
+            headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
+        }
+        
+        // Data
+        for (InvoiceResponse invoice : invoices) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(invoice.getInvoiceNumber());
+            row.createCell(1).setCellValue(invoice.getInvoiceDate().format(DATE_FORMATTER));
+            row.createCell(2).setCellValue(invoice.getCustomer().getCompanyName());
+            row.createCell(3).setCellValue(invoice.getStatus().toString());
+            row.createCell(4).setCellValue(invoice.getItems() != null ? invoice.getItems().size() : 0);
+            
+            Cell amountCell = row.createCell(5);
+            amountCell.setCellValue(invoice.getTotalAmount().doubleValue());
+            amountCell.setCellStyle(createCurrencyStyle(workbook));
+            
+            String observations = invoice.getObservations() != null ? invoice.getObservations() : "";
+            row.createCell(6).setCellValue(observations);
+        }
+        
+        return rowNum;
+    }
+    
+    private String getMonthName(int month) {
+        return switch (month) {
+            case 1 -> "Enero";
+            case 2 -> "Febrero";
+            case 3 -> "Marzo";
+            case 4 -> "Abril";
+            case 5 -> "Mayo";
+            case 6 -> "Junio";
+            case 7 -> "Julio";
+            case 8 -> "Agosto";
+            case 9 -> "Septiembre";
+            case 10 -> "Octubre";
+            case 11 -> "Noviembre";
+            case 12 -> "Diciembre";
+            default -> "Mes " + month;
+        };
+    }
+    
     public byte[] generateInvoiceExcel(InvoiceResponse invoice) throws ExportException {
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -54,7 +336,7 @@ public class ExcelExporter {
             
             int rowNum = createInvoiceSheet(workbook, sheet, invoice);
             
-            autoSizeColumns(sheet, 4);
+            autoSizeColumns(sheet, 5);
             workbook.write(outputStream);
             
             return outputStream.toByteArray();
@@ -72,7 +354,7 @@ public class ExcelExporter {
         Cell titleCell = titleRow.createCell(0);
         titleCell.setCellValue("FACTURA");
         titleCell.setCellStyle(createHeaderStyle(workbook));
-        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 3));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 4));
         
         rowNum++; // Espacio
         
@@ -129,12 +411,13 @@ public class ExcelExporter {
         // Headers
         Row headerRow = sheet.createRow(rowNum++);
         headerRow.createCell(0).setCellValue("Cant.");
-        headerRow.createCell(1).setCellValue("Descripción");
-        headerRow.createCell(2).setCellValue("Precio Unitario");
-        headerRow.createCell(3).setCellValue("Total");
+        headerRow.createCell(1).setCellValue("N° Guía");
+        headerRow.createCell(2).setCellValue("Descripción");
+        headerRow.createCell(3).setCellValue("Precio Unitario");
+        headerRow.createCell(4).setCellValue("Total");
         
         // Apply header style
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
         }
         
@@ -142,13 +425,21 @@ public class ExcelExporter {
         for (InvoiceItemResponse item : invoice.getItems()) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue("1");
-            row.createCell(1).setCellValue(item.getServiceDescription());
             
-            Cell priceCell = row.createCell(2);
+            // Número de guía
+            String awbNumber = "";
+            if (item.getAirWaybill() != null && item.getAirWaybill().getAwbNumber() != null) {
+                awbNumber = item.getAirWaybill().getAwbNumber();
+            }
+            row.createCell(1).setCellValue(awbNumber);
+            
+            row.createCell(2).setCellValue(item.getServiceDescription());
+            
+            Cell priceCell = row.createCell(3);
             priceCell.setCellValue(item.getAmount().doubleValue());
             priceCell.setCellStyle(createCurrencyStyle(workbook));
             
-            Cell totalCell = row.createCell(3);
+            Cell totalCell = row.createCell(4);
             totalCell.setCellValue(item.getAmount().doubleValue());
             totalCell.setCellStyle(createCurrencyStyle(workbook));
         }
@@ -162,16 +453,16 @@ public class ExcelExporter {
         Row row = sheet.createRow(rowNum++);
         Cell obsCell = row.createCell(0);
         obsCell.setCellValue(observations);
-        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum-1, rowNum-1, 0, 4));
         
         return rowNum;
     }
     
     private void createTotalSection(XSSFWorkbook workbook, Sheet sheet, int rowNum, InvoiceResponse invoice) {
         Row row = sheet.createRow(rowNum);
-        row.createCell(2).setCellValue("TOTAL:");
+        row.createCell(3).setCellValue("TOTAL:");
         
-        Cell totalCell = row.createCell(3);
+        Cell totalCell = row.createCell(4);
         totalCell.setCellValue(invoice.getTotalAmount().doubleValue());
         totalCell.setCellStyle(createHeaderStyle(workbook));
         totalCell.setCellStyle(createCurrencyStyle(workbook));
