@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -77,7 +78,7 @@ public class CustomerController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION')")
     public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
         Long tenantId = TenantContext.getCurrentTenantId();
-        CustomerResponse customer = customerService.getCustomerById(id, tenantId);
+        CustomerResponse customer = customerService.getCustomerResponseById(id, tenantId);
         return ResponseEntity.ok(customer);
     }
 
@@ -89,6 +90,17 @@ public class CustomerController {
         
         Long tenantId = TenantContext.getCurrentTenantId();
         CustomerResponse response = customerService.updateCustomer(id, request, tenantId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/ai-config")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
+    public ResponseEntity<CustomerResponse> updateCustomerAiConfig(
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> aiConfig) {
+        
+        Long tenantId = TenantContext.getCurrentTenantId();
+        CustomerResponse response = customerService.updateCustomerAiConfig(id, aiConfig, tenantId);
         return ResponseEntity.ok(response);
     }
 

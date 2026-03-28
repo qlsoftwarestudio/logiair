@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
+import java.util.Arrays;
 
 @Service
 public class JwtService {
@@ -118,6 +120,53 @@ public class JwtService {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public String generateServiceToken(String serviceName, List<String> permissions) {
+        logger.info("Generating service token for: {} with permissions: {}", serviceName, permissions);
+        
+        return Jwts.builder()
+                .subject(serviceName)
+                .claim("type", "service")
+                .claim("permissions", permissions)
+                .claim("serviceName", serviceName)
+                .issuedAt(new Date())
+                // Sin expiración para tokens de servicio
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public List<String> extractPermissions(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("permissions", List.class);
+        } catch (Exception e) {
+            logger.error("Failed to extract permissions from token: {}", e.getMessage());
+            return Arrays.asList();
+        }
+    }
+
+    public String extractTokenType(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("type", String.class);
+        } catch (Exception e) {
+            logger.error("Failed to extract token type: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean isServiceToken(String token) {
+        String tokenType = extractTokenType(token);
+        return "service".equals(tokenType);
     }
 }
 

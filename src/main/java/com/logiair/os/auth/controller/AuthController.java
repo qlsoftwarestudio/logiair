@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/auth")
@@ -53,6 +54,19 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         String token = authService.login(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(Map.of("token", token, "message", "Login successful"));
+    }
+
+    @PostMapping("/service-token")
+    public ResponseEntity<?> createServiceToken() {
+        logger.info("Creating service token for n8n automation");
+        String serviceToken = authService.createServiceToken("n8n-service");
+        return ResponseEntity.ok(Map.of(
+            "token", serviceToken,
+            "type", "service",
+            "expiresIn", "never",
+            "permissions", Arrays.asList("READ_CUSTOMERS", "WRITE_PREALERTS", "READ_PREALERTS"),
+            "message", "Service token created successfully for n8n automation"
+        ));
     }
 
 }

@@ -119,18 +119,7 @@ public class InvoiceController {
         return ResponseEntity.ok(invoices);
     }
 
-    @GetMapping("/customer/{customerId}/monthly")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION', 'OPERATOR_LOGISTICS')")
-    public ResponseEntity<List<InvoiceResponse>> getMonthlyInvoicesByCustomer(
-            @PathVariable Long customerId,
-            @RequestParam int month,
-            @RequestParam int year) {
-        
-        Long tenantId = TenantContext.getCurrentTenantId();
-        List<InvoiceResponse> invoices = invoiceService.getMonthlyInvoicesByCustomer(tenantId, customerId, month, year);
-        return ResponseEntity.ok(invoices);
-    }
-
+    
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION', 'OPERATOR_LOGISTICS')")
     public ResponseEntity<InvoiceResponse> getInvoiceById(@PathVariable Long id) {
@@ -169,18 +158,7 @@ public class InvoiceController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/generate-monthly")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
-    public ResponseEntity<String> generateMonthlyInvoices(
-            @RequestParam int month,
-            @RequestParam int year,
-            @RequestParam(required = false) Long customerId) {
-        
-        // This would be a complex operation to generate monthly invoices automatically
-        // For now, return a message indicating the feature
-        return ResponseEntity.ok("Monthly invoice generation feature would be implemented here");
-    }
-
+    
     @GetMapping("/export/daterange")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
     public ResponseEntity<byte[]> exportInvoicesByDateRange(
@@ -237,58 +215,7 @@ public class InvoiceController {
         }
     }
 
-    @GetMapping("/export/monthly")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
-    public ResponseEntity<byte[]> exportMonthlyInvoices(
-            @RequestParam int month,
-            @RequestParam int year,
-            @RequestParam(required = false) Long customerId,
-            @RequestParam(defaultValue = "excel") String format) {
-        
-        Long tenantId = TenantContext.getCurrentTenantId();
-        List<InvoiceResponse> invoices;
-        
-        if (customerId != null) {
-            invoices = invoiceService.getMonthlyInvoicesByCustomer(tenantId, customerId, month, year);
-        } else {
-            invoices = invoiceService.getMonthlyInvoices(tenantId, month, year);
-        }
-        
-        byte[] fileContent;
-        String contentType;
-        String fileExtension;
-        String fileName;
-        
-        try {
-            switch (format.toLowerCase()) {
-                case "excel":
-                case "xlsx":
-                    fileContent = excelExporter.generateMonthlyInvoicesExcel(invoices, month, year);
-                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    fileExtension = "xlsx";
-                    break;
-                case "pdf":
-                default:
-                    fileContent = pdfExporter.generateMonthlyInvoicesPdf(invoices, month, year);
-                    contentType = "application/pdf";
-                    fileExtension = "pdf";
-                    break;
-            }
-            
-            String monthYear = String.format("%02d-%d", month, year);
-            String customerSuffix = customerId != null ? "_Cliente_" + customerId : "";
-            fileName = "Facturas_Mensuales_" + monthYear + customerSuffix + "." + fileExtension;
-            
-            return ResponseEntity.ok()
-                    .header("Content-Type", contentType)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                    .body(fileContent);
-                    
-        } catch (Exception e) {
-            throw new RuntimeException("Error generating monthly export: " + e.getMessage(), e);
-        }
-    }
-
+    
     @GetMapping("/export/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
     public ResponseEntity<byte[]> exportInvoice(

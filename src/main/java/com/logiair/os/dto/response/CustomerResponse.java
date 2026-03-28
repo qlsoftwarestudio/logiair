@@ -17,6 +17,12 @@ public class CustomerResponse {
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
+    
+    // AI Configuration Fields
+    private Boolean aiPreAlerts;
+    private Boolean aiPdfExtraction;
+    private Boolean aiAutoReports;
+    private Boolean aiBillingSuggestions;
 
     // Constructors
     public CustomerResponse() {}
@@ -62,4 +68,17 @@ public class CustomerResponse {
     
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    
+    // AI Configuration Getters and Setters
+    public Boolean getAiPreAlerts() { return aiPreAlerts; }
+    public void setAiPreAlerts(Boolean aiPreAlerts) { this.aiPreAlerts = aiPreAlerts; }
+    
+    public Boolean getAiPdfExtraction() { return aiPdfExtraction; }
+    public void setAiPdfExtraction(Boolean aiPdfExtraction) { this.aiPdfExtraction = aiPdfExtraction; }
+    
+    public Boolean getAiAutoReports() { return aiAutoReports; }
+    public void setAiAutoReports(Boolean aiAutoReports) { this.aiAutoReports = aiAutoReports; }
+    
+    public Boolean getAiBillingSuggestions() { return aiBillingSuggestions; }
+    public void setAiBillingSuggestions(Boolean aiBillingSuggestions) { this.aiBillingSuggestions = aiBillingSuggestions; }
 }

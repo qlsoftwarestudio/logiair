@@ -23,6 +23,12 @@ public class CustomerRequest {
     
     private String address;
 
+    // AI Configuration Fields (optional for partial updates)
+    private Boolean aiPreAlerts;
+    private Boolean aiPdfExtraction;
+    private Boolean aiAutoReports;
+    private Boolean aiBillingSuggestions;
+
     public CustomerRequest() {}
 
     // Getters and Setters
@@ -43,4 +49,17 @@ public class CustomerRequest {
     
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    // AI Configuration Getters and Setters
+    public Boolean getAiPreAlerts() { return aiPreAlerts; }
+    public void setAiPreAlerts(Boolean aiPreAlerts) { this.aiPreAlerts = aiPreAlerts; }
+    
+    public Boolean getAiPdfExtraction() { return aiPdfExtraction; }
+    public void setAiPdfExtraction(Boolean aiPdfExtraction) { this.aiPdfExtraction = aiPdfExtraction; }
+    
+    public Boolean getAiAutoReports() { return aiAutoReports; }
+    public void setAiAutoReports(Boolean aiAutoReports) { this.aiAutoReports = aiAutoReports; }
+    
+    public Boolean getAiBillingSuggestions() { return aiBillingSuggestions; }
+    public void setAiBillingSuggestions(Boolean aiBillingSuggestions) { this.aiBillingSuggestions = aiBillingSuggestions; }
 }

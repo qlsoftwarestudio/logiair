@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -52,11 +53,15 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public CustomerResponse getCustomerById(Long id, Long tenantId) {
-        Customer customer = customerRepository.findById(id)
+    public Customer getCustomerById(Long id, Long tenantId) {
+        return customerRepository.findById(id)
                 .filter(c -> c.getTenant().getId().equals(tenantId))
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
-        
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerResponse getCustomerResponseById(Long id, Long tenantId) {
+        Customer customer = getCustomerById(id, tenantId);
         return customerMapper.toResponse(customer);
     }
 
@@ -100,5 +105,28 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public long getTotalCustomers(Long tenantId) {
         return customerRepository.countByTenantId(tenantId);
+    }
+
+    public CustomerResponse updateCustomerAiConfig(Long id, Map<String, Boolean> aiConfig, Long tenantId) {
+        Customer existingCustomer = customerRepository.findById(id)
+                .filter(c -> c.getTenant().getId().equals(tenantId))
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+
+        // Update AI configuration fields based on provided map
+        if (aiConfig.containsKey("aiPreAlerts")) {
+            existingCustomer.setAiPreAlerts(aiConfig.get("aiPreAlerts"));
+        }
+        if (aiConfig.containsKey("aiPdfExtraction")) {
+            existingCustomer.setAiPdfExtraction(aiConfig.get("aiPdfExtraction"));
+        }
+        if (aiConfig.containsKey("aiAutoReports")) {
+            existingCustomer.setAiAutoReports(aiConfig.get("aiAutoReports"));
+        }
+        if (aiConfig.containsKey("aiBillingSuggestions")) {
+            existingCustomer.setAiBillingSuggestions(aiConfig.get("aiBillingSuggestions"));
+        }
+
+        Customer updatedCustomer = customerRepository.save(existingCustomer);
+        return customerMapper.toResponse(updatedCustomer);
     }
 }

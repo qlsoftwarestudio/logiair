@@ -47,6 +47,19 @@ public class Customer {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // AI Configuration Fields
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean aiPreAlerts = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean aiPdfExtraction = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean aiAutoReports = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean aiBillingSuggestions = false;
+
     public Customer() {}
 
     @PreUpdate
@@ -82,4 +95,17 @@ public class Customer {
     public void setTenant(Tenant tenant) { this.tenant = tenant; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    
+    // AI Configuration Getters and Setters
+    public Boolean getAiPreAlerts() { return aiPreAlerts; }
+    public void setAiPreAlerts(Boolean aiPreAlerts) { this.aiPreAlerts = aiPreAlerts; }
+    
+    public Boolean getAiPdfExtraction() { return aiPdfExtraction; }
+    public void setAiPdfExtraction(Boolean aiPdfExtraction) { this.aiPdfExtraction = aiPdfExtraction; }
+    
+    public Boolean getAiAutoReports() { return aiAutoReports; }
+    public void setAiAutoReports(Boolean aiAutoReports) { this.aiAutoReports = aiAutoReports; }
+    
+    public Boolean getAiBillingSuggestions() { return aiBillingSuggestions; }
+    public void setAiBillingSuggestions(Boolean aiBillingSuggestions) { this.aiBillingSuggestions = aiBillingSuggestions; }
 }

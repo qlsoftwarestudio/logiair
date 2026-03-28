@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -97,6 +99,24 @@ public class AuthService {
 
         Long tenantId = user.getTenant().getId();
         return jwtService.generateToken(email, tenantId, user.getRole());
+    }
+
+    public String createServiceToken(String serviceName) {
+        logger.info("Creating service token for: {}", serviceName);
+        
+        // Crear token sin expiración para servicios
+        List<String> permissions = Arrays.asList(
+            "READ_CUSTOMERS", 
+            "WRITE_PREALERTS", 
+            "READ_PREALERTS",
+            "READ_AIR_WAYBILLS",
+            "WRITE_AIR_WAYBILLS"
+        );
+        
+        String token = jwtService.generateServiceToken(serviceName, permissions);
+        
+        logger.info("Service token created successfully for: {} with permissions: {}", serviceName, permissions);
+        return token;
     }
 }
 

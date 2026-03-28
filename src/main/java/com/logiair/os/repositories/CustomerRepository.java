@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByTaxIdAndTenantId(String taxId, Long tenantId);
+    Optional<Customer> findByIdAndTenantId(Long id, Long tenantId);
     boolean existsByTaxIdAndTenantId(String taxId, Long tenantId);
     Page<Customer> findByTenantId(Long tenantId, Pageable pageable);
     

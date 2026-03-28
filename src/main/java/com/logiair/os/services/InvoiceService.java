@@ -155,22 +155,7 @@ public class InvoiceService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public List<InvoiceResponse> getMonthlyInvoices(Long tenantId, int month, int year) {
-        List<Invoice> invoices = invoiceRepository.findByMonthAndYear(tenantId, month, year);
-        return invoices.stream()
-                .map(invoiceMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<InvoiceResponse> getMonthlyInvoicesByCustomer(Long tenantId, Long customerId, int month, int year) {
-        List<Invoice> invoices = invoiceRepository.findByCustomerAndMonthAndYear(tenantId, customerId, month, year);
-        return invoices.stream()
-                .map(invoiceMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
+    
     public InvoiceResponse updateInvoice(Long id, InvoiceRequest request, Long tenantId) {
         Invoice existingInvoice = invoiceRepository.findById(id)
                 .filter(inv -> inv.getTenant().getId().equals(tenantId))

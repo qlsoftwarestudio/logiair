@@ -4,5 +4,6 @@ public enum Role {
     ADMIN,
     OPERATOR_LOGISTICS,
     ADMINISTRATION,
-    CUSTOMER
+    CUSTOMER,
+    SERVICE
 }
