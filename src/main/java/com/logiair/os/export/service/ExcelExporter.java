@@ -29,10 +29,10 @@ public class ExcelExporter {
             Sheet sheet = workbook.createSheet(reportType.getDescription());
             
             switch (reportType) {
-                case DASHBOARD -> createDashboardSheet(workbook, sheet, data);
+                case DASHBOARD, GENERAL -> createDashboardSheet(workbook, sheet, data);
                 case OPERATIONS -> createOperationsSheet(workbook, sheet, data);
                 case CUSTOMERS -> createCustomersSheet(workbook, sheet, data);
-                case INVOICING -> createInvoicingSheet(workbook, sheet, data);
+                case INVOICING, FINANCIAL -> createInvoicingSheet(workbook, sheet, data);
                 case COMMISSIONS -> createCommissionsSheet(workbook, sheet, data);
             }
             
