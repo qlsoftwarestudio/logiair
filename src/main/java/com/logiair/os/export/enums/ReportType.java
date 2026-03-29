@@ -2,6 +2,7 @@ package com.logiair.os.export.enums;
 
 public enum ReportType {
     DASHBOARD("dashboard", "Dashboard General"),
+    GENERAL("general", "Reporte General"), // Alias para DASHBOARD
     OPERATIONS("operations", "Reporte de Operaciones"),
     CUSTOMERS("customers", "Reporte de Clientes"),
     INVOICING("invoicing", "Reporte de Facturación"),

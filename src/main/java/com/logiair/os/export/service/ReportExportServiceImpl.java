@@ -62,7 +62,7 @@ public class ReportExportServiceImpl implements ReportExportService {
             LocalDate endDate
     ) {
         return switch (reportType) {
-            case DASHBOARD -> convertDashboardToMap(reportService.getDashboardData(tenantId));
+            case DASHBOARD, GENERAL -> convertDashboardToMap(reportService.getDashboardData(tenantId));
             case OPERATIONS -> reportService.getOperationsReport(tenantId, startDate, endDate);
             case CUSTOMERS -> reportService.getCustomerReport(tenantId);
             case INVOICING, FINANCIAL -> reportService.getInvoicingReport(tenantId, startDate, endDate);

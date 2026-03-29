@@ -18,6 +18,10 @@ public interface CustomerMapper {
     @Mapping(target = "tenant", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "aiPreAlerts", defaultValue = "false")
+    @Mapping(target = "aiPdfExtraction", defaultValue = "false")
+    @Mapping(target = "aiAutoReports", defaultValue = "false")
+    @Mapping(target = "aiBillingSuggestions", defaultValue = "false")
     Customer toEntity(CustomerRequest request);
     
     @Mapping(target = "id", ignore = true)
