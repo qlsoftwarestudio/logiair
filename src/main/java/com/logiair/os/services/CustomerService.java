@@ -136,4 +136,14 @@ public class CustomerService {
                 .map(customerMapper::toResponse)
                 .orElse(null);
     }
+    
+    @Transactional
+    public CustomerResponse updateCustomerPrealertEmail(Long id, String prealertEmail, Long tenantId) {
+        Customer customer = customerRepository.findByIdAndTenantId(id, tenantId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        
+        customer.setPrealertEmail(prealertEmail);
+        Customer updatedCustomer = customerRepository.save(customer);
+        return customerMapper.toResponse(updatedCustomer);
+    }
 }

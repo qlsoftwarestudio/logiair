@@ -136,4 +136,20 @@ public class CustomerController {
         
         return ResponseEntity.ok(customer);
     }
+
+    @PatchMapping("/{id}/prealert-email")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
+    public ResponseEntity<CustomerResponse> updateCustomerPrealertEmail(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        
+        String prealertEmail = request.get("prealertEmail");
+        if (prealertEmail == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        Long tenantId = TenantContext.getCurrentTenantId();
+        CustomerResponse response = customerService.updateCustomerPrealertEmail(id, prealertEmail, tenantId);
+        return ResponseEntity.ok(response);
+    }
 }
