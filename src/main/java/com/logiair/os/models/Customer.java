@@ -60,6 +60,9 @@ public class Customer {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean aiBillingSuggestions = false;
 
+    @Column(name = "prealert_email")
+    private String prealertEmail;
+
     public Customer() {}
 
     @PreUpdate
@@ -108,4 +111,7 @@ public class Customer {
     
     public Boolean getAiBillingSuggestions() { return aiBillingSuggestions; }
     public void setAiBillingSuggestions(Boolean aiBillingSuggestions) { this.aiBillingSuggestions = aiBillingSuggestions; }
+    
+    public String getPrealertEmail() { return prealertEmail; }
+    public void setPrealertEmail(String prealertEmail) { this.prealertEmail = prealertEmail; }
 }

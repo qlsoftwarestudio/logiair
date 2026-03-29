@@ -23,6 +23,9 @@ public class CustomerRequest {
     
     private String address;
 
+    // PreAlert Email Configuration
+    private String prealertEmail;
+
     // AI Configuration Fields (optional for partial updates)
     private Boolean aiPreAlerts;
     private Boolean aiPdfExtraction;
@@ -49,6 +52,9 @@ public class CustomerRequest {
     
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public String getPrealertEmail() { return prealertEmail; }
+    public void setPrealertEmail(String prealertEmail) { this.prealertEmail = prealertEmail; }
     
     // AI Configuration Getters and Setters
     public Boolean getAiPreAlerts() { return aiPreAlerts; }

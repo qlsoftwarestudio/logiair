@@ -129,4 +129,11 @@ public class CustomerService {
         Customer updatedCustomer = customerRepository.save(existingCustomer);
         return customerMapper.toResponse(updatedCustomer);
     }
+    
+    @Transactional(readOnly = true)
+    public CustomerResponse findByPrealertEmail(String email, Long tenantId) {
+        return customerRepository.findByPrealertEmailAndTenantId(email, tenantId)
+                .map(customerMapper::toResponse)
+                .orElse(null);
+    }
 }

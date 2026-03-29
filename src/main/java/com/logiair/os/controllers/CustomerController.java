@@ -119,4 +119,21 @@ public class CustomerController {
         List<CustomerResponse> customers = customerService.getAllCustomersList(tenantId);
         return ResponseEntity.ok(customers);
     }
+
+    @GetMapping("/by-email")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION')")
+    public ResponseEntity<CustomerResponse> getCustomerByEmail(
+            @RequestParam String email,
+            @RequestHeader(value = "X-Tenant-ID", required = false) Long tenantIdHeader) {
+        
+        // Usar tenant del header o del contexto actual
+        Long tenantId = tenantIdHeader != null ? tenantIdHeader : TenantContext.getCurrentTenantId();
+        
+        CustomerResponse customer = customerService.findByPrealertEmail(email, tenantId);
+        if (customer == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(customer);
+    }
 }

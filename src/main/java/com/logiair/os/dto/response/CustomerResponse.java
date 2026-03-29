@@ -23,6 +23,7 @@ public class CustomerResponse {
     private Boolean aiPdfExtraction;
     private Boolean aiAutoReports;
     private Boolean aiBillingSuggestions;
+    private String prealertEmail;
 
     // Constructors
     public CustomerResponse() {}
@@ -81,4 +82,7 @@ public class CustomerResponse {
     
     public Boolean getAiBillingSuggestions() { return aiBillingSuggestions; }
     public void setAiBillingSuggestions(Boolean aiBillingSuggestions) { this.aiBillingSuggestions = aiBillingSuggestions; }
+    
+    public String getPrealertEmail() { return prealertEmail; }
+    public void setPrealertEmail(String prealertEmail) { this.prealertEmail = prealertEmail; }
 }

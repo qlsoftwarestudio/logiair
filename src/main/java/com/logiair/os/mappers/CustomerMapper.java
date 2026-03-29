@@ -22,11 +22,13 @@ public interface CustomerMapper {
     @Mapping(target = "aiPdfExtraction", defaultValue = "false")
     @Mapping(target = "aiAutoReports", defaultValue = "false")
     @Mapping(target = "aiBillingSuggestions", defaultValue = "false")
+    @Mapping(target = "prealertEmail", ignore = true)
     Customer toEntity(CustomerRequest request);
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "tenant", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "prealertEmail", ignore = true)
     void updateEntityFromRequest(CustomerRequest request, @MappingTarget Customer customer);
 }
