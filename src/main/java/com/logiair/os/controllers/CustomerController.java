@@ -129,7 +129,7 @@ public class CustomerController {
         // Usar tenant del header o del contexto actual
         Long tenantId = tenantIdHeader != null ? tenantIdHeader : TenantContext.getCurrentTenantId();
         
-        CustomerResponse customer = customerService.findByPrealertEmail(email, tenantId);
+        CustomerResponse customer = customerService.findByContactEmail(email, tenantId);
         if (customer == null) {
             return ResponseEntity.notFound().build();
         }

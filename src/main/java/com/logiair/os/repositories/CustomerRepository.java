@@ -28,6 +28,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.tenant.id = :tenantId")
     long countByTenantId(@Param("tenantId") Long tenantId);
     
-    @Query("SELECT c FROM Customer c WHERE c.prealertEmail = :email AND c.tenant.id = :tenantId")
-    Optional<Customer> findByPrealertEmailAndTenantId(@Param("email") String email, @Param("tenantId") Long tenantId);
+    @Query("SELECT c FROM Customer c WHERE c.contactEmail = :email AND c.tenant.id = :tenantId")
+    Optional<Customer> findByContactEmailAndTenantId(@Param("email") String email, @Param("tenantId") Long tenantId);
 }

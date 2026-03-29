@@ -51,25 +51,40 @@ public class JwtFilter extends OncePerRequestFilter {
             logger.info("Extracted user email from JWT: {}", userEmail);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                try {
-                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                    logger.info("User found: {}", userDetails.getUsername());
+                // Check if it's a service token
+                if (jwtService.isServiceToken(jwt)) {
+                    logger.info("Service token detected for: {}", userEmail);
+                    
+                    // Create authentication for service token with SERVICE role
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userEmail,
+                            null,
+                            java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_SERVICE"))
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    logger.info("Service authentication set in SecurityContext for: {}", userEmail);
+                } else {
+                    try {
+                        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                        logger.info("User found: {}", userDetails.getUsername());
 
-                    if (jwtService.isTokenValid(jwt, userDetails)) {
-                        logger.info("JWT token valid for user: {}, authorities: {}", userEmail, userDetails.getAuthorities());
-                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                        logger.info("Authentication set in SecurityContext for user: {}", userEmail);
-                    } else {
-                        logger.warn("JWT token validation failed for user: {}", userEmail);
+                        if (jwtService.isTokenValid(jwt, userDetails)) {
+                            logger.info("JWT token valid for user: {}, authorities: {}", userEmail, userDetails.getAuthorities());
+                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                            logger.info("Authentication set in SecurityContext for user: {}", userEmail);
+                        } else {
+                            logger.warn("JWT token validation failed for user: {}", userEmail);
+                        }
+                    } catch (UsernameNotFoundException e) {
+                        logger.error("User not found during JWT validation: {}", e.getMessage());
                     }
-                } catch (UsernameNotFoundException e) {
-                    logger.error("User not found during JWT validation: {}", e.getMessage());
                 }
             }
         } catch (Exception e) {

@@ -131,8 +131,8 @@ public class CustomerService {
     }
     
     @Transactional(readOnly = true)
-    public CustomerResponse findByPrealertEmail(String email, Long tenantId) {
-        return customerRepository.findByPrealertEmailAndTenantId(email, tenantId)
+    public CustomerResponse findByContactEmail(String email, Long tenantId) {
+        return customerRepository.findByContactEmailAndTenantId(email, tenantId)
                 .map(customerMapper::toResponse)
                 .orElse(null);
     }
