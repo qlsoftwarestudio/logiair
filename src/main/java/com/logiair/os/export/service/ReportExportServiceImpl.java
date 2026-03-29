@@ -65,7 +65,7 @@ public class ReportExportServiceImpl implements ReportExportService {
             case DASHBOARD -> convertDashboardToMap(reportService.getDashboardData(tenantId));
             case OPERATIONS -> reportService.getOperationsReport(tenantId, startDate, endDate);
             case CUSTOMERS -> reportService.getCustomerReport(tenantId);
-            case INVOICING -> reportService.getInvoicingReport(tenantId, startDate, endDate);
+            case INVOICING, FINANCIAL -> reportService.getInvoicingReport(tenantId, startDate, endDate);
             case COMMISSIONS -> reportService.getCommissionsReport(tenantId, startDate, endDate);
         };
     }

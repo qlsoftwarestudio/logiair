@@ -5,6 +5,7 @@ public enum ReportType {
     OPERATIONS("operations", "Reporte de Operaciones"),
     CUSTOMERS("customers", "Reporte de Clientes"),
     INVOICING("invoicing", "Reporte de Facturación"),
+    FINANCIAL("financial", "Reporte Financiero"), // Alias para INVOICING
     COMMISSIONS("commissions", "Reporte de Comisiones");
 
     private final String code;

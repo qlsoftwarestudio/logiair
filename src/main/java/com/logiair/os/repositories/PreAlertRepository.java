@@ -2,7 +2,6 @@ package com.logiair.os.repositories;
 
 import com.logiair.os.models.PreAlert;
 import com.logiair.os.models.PreAlertStatus;
-import com.logiair.os.models.Tenant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,26 +16,46 @@ import java.util.Optional;
 @Repository
 public interface PreAlertRepository extends JpaRepository<PreAlert, Long> {
     
-    // Find by tenant
+    Optional<PreAlert> findByTenantIdAndId(Long tenantId, Long id);
+    
     Page<PreAlert> findByTenantId(Long tenantId, Pageable pageable);
     
-    // Find by customer and tenant
+    Page<PreAlert> findByTenantIdAndStatus(Long tenantId, PreAlertStatus status, Pageable pageable);
+    
+    Page<PreAlert> findByTenantIdAndCustomerId(Long tenantId, Long customerId, Pageable pageable);
+    
+    boolean existsByAwbNumberAndTenantId(String awbNumber, Long tenantId);
+    
     Page<PreAlert> findByCustomerIdAndTenantId(Long customerId, Long tenantId, Pageable pageable);
     
-    // Find by AWB number and tenant
-    Optional<PreAlert> findByAwbNumberAndTenantId(String awbNumber, Long tenantId);
+    @Query("SELECT p FROM PreAlert p WHERE p.tenant.id = :tenantId AND " +
+           "p.createdAt >= :since ORDER BY p.createdAt DESC")
+    Page<PreAlert> findRecentByTenant(@Param("tenantId") Long tenantId, @Param("since") LocalDateTime since, Pageable pageable);
     
-    // Find by status and tenant
-    Page<PreAlert> findByStatusAndTenantId(PreAlertStatus status, Long tenantId, Pageable pageable);
+    long countByStatusAndTenantId(PreAlertStatus status, Long tenantId);
     
-    // Find recent prealerts (last 24 hours)
-    @Query("SELECT p FROM PreAlert p WHERE p.tenant.id = :tenantId AND p.createdAt >= :since")
-    List<PreAlert> findRecentByTenant(@Param("tenantId") Long tenantId, @Param("since") LocalDateTime since);
+    @Query("SELECT p FROM PreAlert p WHERE p.tenant.id = :tenantId AND " +
+           "p.createdAt BETWEEN :startDate AND :endDate")
+    Page<PreAlert> findByDateRange(@Param("tenantId") Long tenantId, 
+                                  @Param("startDate") LocalDateTime startDate, 
+                                  @Param("endDate") LocalDateTime endDate, 
+                                  Pageable pageable);
     
-    // Count by status and tenant
+    @Query("SELECT p FROM PreAlert p WHERE p.tenant.id = :tenantId AND " +
+           "p.customer.id = :customerId AND p.createdAt BETWEEN :startDate AND :endDate")
+    Page<PreAlert> findByCustomerAndDateRange(@Param("tenantId") Long tenantId, 
+                                           @Param("customerId") Long customerId, 
+                                           @Param("startDate") LocalDateTime startDate, 
+                                           @Param("endDate") LocalDateTime endDate, 
+                                           Pageable pageable);
+    
     @Query("SELECT COUNT(p) FROM PreAlert p WHERE p.tenant.id = :tenantId AND p.status = :status")
-    long countByStatusAndTenantId(@Param("status") PreAlertStatus status, @Param("tenantId") Long tenantId);
+    long countByStatus(@Param("tenantId") Long tenantId, @Param("status") PreAlertStatus status);
     
-    // Check if AWB exists for tenant
-    boolean existsByAwbNumberAndTenantId(String awbNumber, Long tenantId);
+    @Query("SELECT p.status, COUNT(p) FROM PreAlert p WHERE p.tenant.id = :tenantId GROUP BY p.status")
+    List<Object[]> getPreAlertStats(@Param("tenantId") Long tenantId);
+    
+    @Query("SELECT p FROM PreAlert p WHERE p.tenant.id = :tenantId AND " +
+           "p.source = :source ORDER BY p.createdAt DESC")
+    List<PreAlert> findByTenantIdAndSource(@Param("tenantId") Long tenantId, @Param("source") String source);
 }

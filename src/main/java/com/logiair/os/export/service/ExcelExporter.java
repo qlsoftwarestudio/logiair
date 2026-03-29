@@ -635,7 +635,7 @@ public class ExcelExporter {
     private int getColumnCount(ReportType reportType) {
         return switch (reportType) {
             case DASHBOARD, OPERATIONS, COMMISSIONS -> 2;
-            case CUSTOMERS, INVOICING -> 3;
+            case CUSTOMERS, INVOICING, FINANCIAL -> 3;
         };
     }
     

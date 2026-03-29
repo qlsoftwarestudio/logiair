@@ -87,7 +87,7 @@ public class PreAlertService {
     @Transactional(readOnly = true)
     public List<PreAlertResponse> getRecentPreAlerts(Long tenantId) {
         LocalDateTime since = LocalDateTime.now().minusHours(24);
-        return preAlertRepository.findRecentByTenant(tenantId, since)
+        return preAlertRepository.findRecentByTenant(tenantId, since, org.springframework.data.domain.Pageable.unpaged())
                 .stream()
                 .map(preAlertMapper::toResponse)
                 .toList();
