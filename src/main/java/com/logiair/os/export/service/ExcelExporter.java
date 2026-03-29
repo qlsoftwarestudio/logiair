@@ -589,6 +589,8 @@ public class ExcelExporter {
             valueCell.setCellValue(((Number) value).doubleValue());
         } else if (value != null) {
             valueCell.setCellValue(value.toString());
+        } else {
+            valueCell.setCellValue("N/A");
         }
     }
     
