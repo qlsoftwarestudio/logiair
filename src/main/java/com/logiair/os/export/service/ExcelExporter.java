@@ -54,7 +54,7 @@ public class ExcelExporter {
             
             int rowNum = createDateRangeInvoicesSheet(workbook, sheet, invoices, startDate, endDate, includeCharts);
             
-            autoSizeColumns(sheet, 7);
+            autoSizeColumns(sheet, 8);
             workbook.write(outputStream);
             
             return outputStream.toByteArray();
@@ -118,12 +118,13 @@ public class ExcelExporter {
         headerRow.createCell(1).setCellValue("Fecha");
         headerRow.createCell(2).setCellValue("Cliente");
         headerRow.createCell(3).setCellValue("Estado");
-        headerRow.createCell(4).setCellValue("Cantidad Items");
-        headerRow.createCell(5).setCellValue("Total");
-        headerRow.createCell(6).setCellValue("Días Transcurridos");
+        headerRow.createCell(4).setCellValue("Números de Guía");
+        headerRow.createCell(5).setCellValue("Cantidad Items");
+        headerRow.createCell(6).setCellValue("Total");
+        headerRow.createCell(7).setCellValue("Días Transcurridos");
         
         // Apply header style
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 8; i++) {
             headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
         }
         
@@ -134,19 +135,36 @@ public class ExcelExporter {
             row.createCell(1).setCellValue(invoice.getInvoiceDate().format(DATE_FORMATTER));
             row.createCell(2).setCellValue(invoice.getCustomer().getCompanyName());
             row.createCell(3).setCellValue(invoice.getStatus().toString());
-            row.createCell(4).setCellValue(invoice.getItems() != null ? invoice.getItems().size() : 0);
             
-            Cell amountCell = row.createCell(5);
+            // Números de guía - concatenar todos los AWBs de los items
+            String awbNumbers = "";
+            if (invoice.getItems() != null && !invoice.getItems().isEmpty()) {
+                StringBuilder awbBuilder = new StringBuilder();
+                for (InvoiceItemResponse item : invoice.getItems()) {
+                    if (item.getAirWaybill() != null && item.getAirWaybill().getAwbNumber() != null) {
+                        if (awbBuilder.length() > 0) {
+                            awbBuilder.append(", ");
+                        }
+                        awbBuilder.append(item.getAirWaybill().getAwbNumber());
+                    }
+                }
+                awbNumbers = awbBuilder.toString();
+            }
+            row.createCell(4).setCellValue(awbNumbers);
+            
+            row.createCell(5).setCellValue(invoice.getItems() != null ? invoice.getItems().size() : 0);
+            
+            Cell amountCell = row.createCell(6);
             amountCell.setCellValue(invoice.getTotalAmount().doubleValue());
             amountCell.setCellStyle(createCurrencyStyle(workbook));
             
             // Días transcurridos desde la fecha de la factura
             long daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(invoice.getInvoiceDate(), LocalDate.now());
-            row.createCell(6).setCellValue(daysElapsed);
+            row.createCell(7).setCellValue(daysElapsed);
             
             // Colorear según estado
             if (invoice.getStatus().toString().equals("PENDING")) {
-                for (int i = 0; i < 7; i++) {
+                for (int i = 0; i < 8; i++) {
                     row.getCell(i).setCellStyle(createPendingStyle(workbook));
                 }
             }

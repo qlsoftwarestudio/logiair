@@ -140,11 +140,13 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
-    public List<InvoiceResponse> getInvoicesByDateRange(Long tenantId, LocalDate startDate, LocalDate endDate, Long customerId) {
+    public List<InvoiceResponse> getInvoicesByDateRange(Long tenantId, LocalDate startDate, LocalDate endDate, Long customerId, String companyName) {
         List<Invoice> invoices;
         
         if (customerId != null) {
             invoices = invoiceRepository.findByCustomerAndDateRange(tenantId, customerId, startDate, endDate);
+        } else if (companyName != null && !companyName.trim().isEmpty()) {
+            invoices = invoiceRepository.findByCustomerNameAndDateRange(tenantId, companyName, startDate, endDate);
         } else {
             invoices = invoiceRepository.findByDateRange(tenantId, startDate, endDate, 
                     org.springframework.data.domain.Pageable.unpaged()).getContent();

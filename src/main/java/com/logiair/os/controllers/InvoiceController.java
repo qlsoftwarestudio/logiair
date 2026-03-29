@@ -165,6 +165,7 @@ public class InvoiceController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) String companyName,
             @RequestParam(defaultValue = "excel") String format,
             @RequestParam(defaultValue = "false") boolean includeCharts) {
         
@@ -175,8 +176,15 @@ public class InvoiceController {
                            "Para reportes más extensos, use múltiples exportaciones.").getBytes());
         }
         
+        // Validar que no se proporcionen ambos parámetros
+        if (customerId != null && companyName != null && !companyName.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(("No se puede especificar ambos parámetros: customerId y companyName. " +
+                           "Use solo uno de ellos.").getBytes());
+        }
+        
         Long tenantId = TenantContext.getCurrentTenantId();
-        List<InvoiceResponse> invoices = invoiceService.getInvoicesByDateRange(tenantId, startDate, endDate, customerId);
+        List<InvoiceResponse> invoices = invoiceService.getInvoicesByDateRange(tenantId, startDate, endDate, customerId, companyName);
         
         byte[] fileContent;
         String contentType;
@@ -201,7 +209,17 @@ public class InvoiceController {
             
             String dateRange = startDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + 
                              "_a_" + endDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-            String customerSuffix = customerId != null ? "_Cliente_" + customerId : "";
+            
+            // Construir sufijo de cliente
+            String customerSuffix = "";
+            if (customerId != null) {
+                customerSuffix = "_ClienteID_" + customerId;
+            } else if (companyName != null && !companyName.trim().isEmpty()) {
+                // Limpiar el nombre de archivo para caracteres inválidos
+                String cleanName = companyName.replaceAll("[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]", "_");
+                customerSuffix = "_Cliente_" + cleanName;
+            }
+            
             String chartsSuffix = includeCharts ? "_ConGraficos" : "";
             fileName = "Facturas_" + dateRange + customerSuffix + chartsSuffix + "." + fileExtension;
             
