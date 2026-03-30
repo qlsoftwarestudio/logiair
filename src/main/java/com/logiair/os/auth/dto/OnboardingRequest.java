@@ -1,21 +1,27 @@
 package com.logiair.os.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OnboardingRequest {
     
     @NotBlank(message = "Business name is required")
     @Size(min = 2, max = 100, message = "Business name must be between 2 and 100 characters")
+    @JsonProperty("businessName")
     private String businessName;
     
     @NotBlank(message = "Tax ID is required")
     @Size(min = 5, max = 20, message = "Tax ID must be between 5 and 20 characters")
+    @JsonProperty("taxId")
     private String taxId;
     
     @NotBlank(message = "Admin name is required")
     @Size(min = 2, max = 100, message = "Admin name must be between 2 and 100 characters")
+    @JsonProperty("adminName")
     private String adminName;
     
     @Size(min = 2, max = 50, message = "Admin lastname must be between 2 and 50 characters")
@@ -23,10 +29,12 @@ public class OnboardingRequest {
     
     @NotBlank(message = "Admin email is required")
     @Email(message = "Invalid email format")
+    @JsonProperty("adminEmail")
     private String adminEmail;
     
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
+    @JsonProperty("adminPassword")
     private String password;
 
     // Getters and Setters
