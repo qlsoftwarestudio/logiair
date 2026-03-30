@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
     Optional<Tenant> findByName(String name);
     boolean existsByName(String name);
+    Optional<Tenant> findByTaxId(String taxId);
+    boolean existsByTaxId(String taxId);
     java.util.List<Tenant> findByStatus(TenantStatus status);
 }

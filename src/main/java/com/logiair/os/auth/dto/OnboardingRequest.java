@@ -10,11 +10,14 @@ public class OnboardingRequest {
     @Size(min = 2, max = 100, message = "Business name must be between 2 and 100 characters")
     private String businessName;
     
+    @NotBlank(message = "Tax ID is required")
+    @Size(min = 5, max = 20, message = "Tax ID must be between 5 and 20 characters")
+    private String taxId;
+    
     @NotBlank(message = "Admin name is required")
-    @Size(min = 2, max = 50, message = "Admin name must be between 2 and 50 characters")
+    @Size(min = 2, max = 100, message = "Admin name must be between 2 and 100 characters")
     private String adminName;
     
-    @NotBlank(message = "Admin lastname is required")
     @Size(min = 2, max = 50, message = "Admin lastname must be between 2 and 50 characters")
     private String adminLastname;
     
@@ -34,6 +37,15 @@ public class OnboardingRequest {
     public void setBusinessName(String businessName) {
         this.businessName = businessName;
     }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
 
     public String getAdminName() {
         return adminName;
@@ -71,6 +83,7 @@ public class OnboardingRequest {
     public String toString() {
         return "OnboardingRequest{" +
                 "businessName='" + businessName + '\'' +
+                ", taxId='" + taxId + '\'' +
                 ", adminName='" + adminName + '\'' +
                 ", adminLastname='" + adminLastname + '\'' +
                 ", adminEmail='" + adminEmail + '\'' +

@@ -21,24 +21,27 @@ public class OnboardingService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TaxIdGenerator taxIdGenerator;
 
     public OnboardingService(TenantService tenantService,
                            UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtService jwtService) {
+                           JwtService jwtService,
+                           TaxIdGenerator taxIdGenerator) {
         this.tenantService = tenantService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.taxIdGenerator = taxIdGenerator;
     }
 
     @Transactional
     public String onboard(OnboardingRequest request) {
-        logger.info("Starting onboarding process for business: {}", request.getBusinessName());
+        logger.info("Starting onboarding process for business: {} with taxId: {}", request.getBusinessName(), request.getTaxId());
 
-        // 1. Create Tenant
-        Tenant tenant = tenantService.create(request.getBusinessName());
-        logger.info("Tenant created with ID: {}", tenant.getId());
+        // 1. Create Tenant with provided taxId
+        Tenant tenant = tenantService.create(request.getBusinessName(), request.getTaxId());
+        logger.info("Tenant created with ID: {} and taxId: {}", tenant.getId(), tenant.getTaxId());
 
         // 2. Create Admin User
         User adminUser = createAdminUser(tenant, request);
@@ -52,9 +55,31 @@ public class OnboardingService {
     }
 
     private User createAdminUser(Tenant tenant, OnboardingRequest request) {
+        // Handle name splitting - if adminLastname is null, split adminName
+        String firstName, lastName;
+        
+        if (request.getAdminLastname() != null && !request.getAdminLastname().trim().isEmpty()) {
+            // Use provided first and last name
+            firstName = request.getAdminName();
+            lastName = request.getAdminLastname();
+        } else {
+            // Split full name into first and last name
+            String fullName = request.getAdminName().trim();
+            String[] nameParts = fullName.split("\\s+", 2);
+            
+            if (nameParts.length >= 2) {
+                firstName = nameParts[0];
+                lastName = nameParts[1];
+            } else {
+                // If only one word provided, use it as first name and empty last name
+                firstName = fullName;
+                lastName = "";
+            }
+        }
+        
         User admin = new User(
-            request.getAdminName(),
-            request.getAdminLastname(),
+            firstName,
+            lastName,
             request.getAdminEmail(),
             Role.ADMIN,
             true,

@@ -21,7 +21,7 @@ public class DataInitializer {
         return args -> {
             // Create default tenant if not exists
             if (tenantRepository.count() == 0) {
-                Tenant defaultTenant = new Tenant("Logiair OS Default");
+                Tenant defaultTenant = new Tenant("Logiair OS Default", "00-00000000-0");
                 tenantRepository.save(defaultTenant);
                 
                 // Create default admin user

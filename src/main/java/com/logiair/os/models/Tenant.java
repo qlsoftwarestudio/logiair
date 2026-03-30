@@ -12,6 +12,9 @@ public class Tenant {
     private Long id;
 
     private String name;
+    
+    @Column(unique = true)
+    private String taxId;
 
     @Enumerated(EnumType.STRING)
     private TenantStatus status;
@@ -21,8 +24,9 @@ public class Tenant {
 
     protected Tenant() {}
 
-    public Tenant(String name) {
+    public Tenant(String name, String taxId) {
         this.name = name;
+        this.taxId = taxId;
         this.status = TenantStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
     }
@@ -46,6 +50,14 @@ public class Tenant {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
     }
 
     public TenantStatus getStatus() {
