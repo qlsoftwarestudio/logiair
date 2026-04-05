@@ -69,9 +69,8 @@ public class AirWaybill {
     @Column(name = "consignee")
     private String consignee;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "awb_type", nullable = false)
+    @Column(name = "awb_type")
     private AirWaybillType awbType = AirWaybillType.HOUSE;
 
     @ManyToOne(fetch = FetchType.LAZY)
