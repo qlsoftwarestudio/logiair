@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,6 +65,11 @@ public class AirWaybillService {
         airWaybill.setArrivalOrDepartureDate(request.getArrivalOrDepartureDate());
         airWaybill.setObservations(request.getObservations());
         airWaybill.setManifestNumber(request.getManifestNumber());
+        airWaybill.setPieces(request.getPieces() != null ? request.getPieces() : 0);
+        airWaybill.setWeightKg(request.getWeightKg() != null ? request.getWeightKg() : java.math.BigDecimal.ZERO);
+        airWaybill.setShipper(request.getShipper());
+        airWaybill.setConsignee(request.getConsignee());
+        airWaybill.setAwbType(request.getAwbType() != null ? request.getAwbType() : AirWaybillType.HOUSE);
         airWaybill.setTenant(tenant);
         airWaybill.setCustomer(customer);
         
@@ -74,6 +80,17 @@ public class AirWaybillService {
         airWaybill.setCreatedBy(createdBy);
         
         airWaybill.setStatus(AirWaybillStatus.PRE_ALERT); // Default status
+        
+        // Handle parent AWB relationship for HOUSE type
+        if (request.getParentAwbId() != null) {
+            AirWaybill parentAwb = airWaybillRepository.findById(request.getParentAwbId())
+                    .filter(awb -> awb.getTenant().getId().equals(tenant.getId()))
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent Air Waybill not found with id: " + request.getParentAwbId()));
+            
+            validateParentAwb(parentAwb, airWaybill);
+            airWaybill.setParentAwb(parentAwb);
+            airWaybill.setAwbType(AirWaybillType.HOUSE);
+        }
         
         logger.info("About to save AirWaybill, createdBy ID: {}, createdBy name: {}", 
                    airWaybill.getCreatedBy().getId(), airWaybill.getCreatedBy().getName());
@@ -139,6 +156,26 @@ public class AirWaybillService {
 
         airWaybillMapper.updateEntityFromRequest(request, existingAirWaybill);
         existingAirWaybill.setCustomer(customer);
+        
+        // Handle parent AWB relationship update
+        if (request.getParentAwbId() != null) {
+            if (existingAirWaybill.getParentAwb() == null || 
+                !existingAirWaybill.getParentAwb().getId().equals(request.getParentAwbId())) {
+                AirWaybill parentAwb = airWaybillRepository.findById(request.getParentAwbId())
+                        .filter(awb -> awb.getTenant().getId().equals(tenantId))
+                        .orElseThrow(() -> new ResourceNotFoundException("Parent Air Waybill not found with id: " + request.getParentAwbId()));
+                
+                validateParentAwb(parentAwb, existingAirWaybill);
+                existingAirWaybill.setParentAwb(parentAwb);
+                existingAirWaybill.setAwbType(AirWaybillType.HOUSE);
+            }
+        } else {
+            // Remove parent relationship if parentAwbId is null
+            existingAirWaybill.setParentAwb(null);
+            if (existingAirWaybill.getAwbType() == AirWaybillType.HOUSE) {
+                existingAirWaybill.setAwbType(AirWaybillType.MASTER);
+            }
+        }
 
         AirWaybill updatedAirWaybill = airWaybillRepository.save(existingAirWaybill);
         return airWaybillMapper.toResponse(updatedAirWaybill);
@@ -249,5 +286,63 @@ public class AirWaybillService {
             case INVOICED:
                 throw new IllegalStateException("Cannot transition from INVOICED status");
         }
+    }
+    
+    private void validateParentAwb(AirWaybill parentAwb, AirWaybill childAwb) {
+        // Validate that parent is a MASTER type
+        if (parentAwb.getAwbType() != AirWaybillType.MASTER) {
+            throw new IllegalArgumentException("Parent AWB must be of type MASTER");
+        }
+        
+        // Validate that parent is not the same as child
+        if (parentAwb.getId().equals(childAwb.getId())) {
+            throw new IllegalArgumentException("An AWB cannot be its own parent");
+        }
+        
+        // Validate that parent doesn't have a parent (no nesting beyond 1 level for now)
+        if (parentAwb.getParentAwb() != null) {
+            throw new IllegalArgumentException("Parent AWB cannot itself be a HOUSE AWB (no nested hierarchies)");
+        }
+        
+        // Validate same tenant
+        if (!parentAwb.getTenant().getId().equals(childAwb.getTenant().getId())) {
+            throw new IllegalArgumentException("Parent and child AWBs must belong to the same tenant");
+        }
+    }
+    
+    @Transactional(readOnly = true)
+    public List<AirWaybillResponse> getAirWaybillsByType(Long tenantId, AirWaybillType awbType) {
+        return airWaybillRepository.findByTenantIdAndAwbType(tenantId, awbType)
+                .stream()
+                .map(airWaybillMapper::toResponse)
+                .toList();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<AirWaybillResponse> getChildAirWaybills(Long tenantId, Long parentAwbId) {
+        return airWaybillRepository.findByTenantIdAndParentAwbId(tenantId, parentAwbId)
+                .stream()
+                .map(airWaybillMapper::toResponse)
+                .toList();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<AirWaybillResponse> getAirWaybillsForExport(Long tenantId, LocalDate startDate, LocalDate endDate,
+                                                           Long customerId, AirWaybillType awbType, AirWaybillStatus status) {
+        // Get all air waybills for tenant
+        List<AirWaybill> allAirWaybills = airWaybillRepository.findByTenantId(tenantId, org.springframework.data.domain.Pageable.unpaged()).getContent();
+        
+        return allAirWaybills.stream()
+                .filter(awb -> customerId == null || (awb.getCustomer() != null && awb.getCustomer().getId().equals(customerId)))
+                .filter(awb -> awbType == null || awb.getAwbType() == awbType)
+                .filter(awb -> status == null || awb.getStatus() == status)
+                .filter(awb -> {
+                    if (startDate == null || endDate == null) return true;
+                    if (awb.getArrivalOrDepartureDate() == null) return false;
+                    return !awb.getArrivalOrDepartureDate().isBefore(startDate) && 
+                           !awb.getArrivalOrDepartureDate().isAfter(endDate);
+                })
+                .map(airWaybillMapper::toResponse)
+                .toList();
     }
 }

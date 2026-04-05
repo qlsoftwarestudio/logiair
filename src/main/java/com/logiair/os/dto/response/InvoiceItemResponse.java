@@ -8,17 +8,19 @@ public class InvoiceItemResponse {
     private BigDecimal amount;
     private BigDecimal agencyCommission;
     private AirWaybillResponse airWaybill;
+    private String manifestNumber;
 
     // Constructors
     public InvoiceItemResponse() {}
 
     public InvoiceItemResponse(Long id, String serviceDescription, BigDecimal amount,
-                              BigDecimal agencyCommission, AirWaybillResponse airWaybill) {
+                              BigDecimal agencyCommission, AirWaybillResponse airWaybill, String manifestNumber) {
         this.id = id;
         this.serviceDescription = serviceDescription;
         this.amount = amount;
         this.agencyCommission = agencyCommission;
         this.airWaybill = airWaybill;
+        this.manifestNumber = manifestNumber;
     }
 
     // Getters and Setters
@@ -36,4 +38,7 @@ public class InvoiceItemResponse {
     
     public AirWaybillResponse getAirWaybill() { return airWaybill; }
     public void setAirWaybill(AirWaybillResponse airWaybill) { this.airWaybill = airWaybill; }
+    
+    public String getManifestNumber() { return manifestNumber; }
+    public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
 }

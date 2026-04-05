@@ -11,6 +11,9 @@ public class CustomerRequest {
     @NotBlank(message = "Tax ID is required")
     private String taxId;
     
+    @NotBlank(message = "Contact is required")
+    private String contact;
+    
     @NotBlank(message = "Contact name is required")
     private String contactName;
     
@@ -22,6 +25,9 @@ public class CustomerRequest {
     private String contactPhone;
     
     private String address;
+    
+    // Email field for database compatibility
+    private String email;
 
     // PreAlert Email Configuration
     private String prealertEmail;
@@ -41,6 +47,13 @@ public class CustomerRequest {
     public String getTaxId() { return taxId; }
     public void setTaxId(String taxId) { this.taxId = taxId; }
     
+    // Alias for cuit (Argentine tax ID format)
+    public String getCuit() { return taxId; }
+    public void setCuit(String cuit) { this.taxId = cuit; }
+    
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
+    
     public String getContactName() { return contactName; }
     public void setContactName(String contactName) { this.contactName = contactName; }
     
@@ -52,6 +65,9 @@ public class CustomerRequest {
     
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     
     public String getPrealertEmail() { return prealertEmail; }
     public void setPrealertEmail(String prealertEmail) { this.prealertEmail = prealertEmail; }

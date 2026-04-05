@@ -2,6 +2,7 @@ package com.logiair.os.repositories;
 
 import com.logiair.os.models.AirWaybill;
 import com.logiair.os.models.AirWaybillStatus;
+import com.logiair.os.models.AirWaybillType;
 import com.logiair.os.models.OperationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,4 +46,13 @@ public interface AirWaybillRepository extends JpaRepository<AirWaybill, Long> {
     
     @Query("SELECT awb FROM AirWaybill awb WHERE awb.tenant.id = :tenantId AND awb.status IN :statuses")
     List<AirWaybill> findByStatuses(@Param("tenantId") Long tenantId, @Param("statuses") List<AirWaybillStatus> statuses);
+    
+    List<AirWaybill> findByTenantIdAndAwbType(Long tenantId, AirWaybillType awbType);
+    
+    List<AirWaybill> findByTenantIdAndParentAwbId(Long tenantId, Long parentAwbId);
+    
+    @Query("SELECT awb FROM AirWaybill awb WHERE awb.tenant.id = :tenantId AND awb.parentAwb IS NULL")
+    List<AirWaybill> findMasterAirWaybills(@Param("tenantId") Long tenantId);
+    
+    List<AirWaybill> findByTenantIdAndManifestNumber(Long tenantId, String manifestNumber);
 }

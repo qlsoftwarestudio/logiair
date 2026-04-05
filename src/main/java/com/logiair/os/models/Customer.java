@@ -26,6 +26,16 @@ public class Customer {
     @Column(name = "tax_id", nullable = false)
     private String taxId;
 
+    @Column(name = "cuit")
+    private String cuit;
+    
+    @Column(name = "email")
+    private String email;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String contact;
+
     @NotBlank
     @Column(name = "contact_name", nullable = false)
     private String contactName;
@@ -70,9 +80,10 @@ public class Customer {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Customer(String companyName, String taxId, String contactName, String contactEmail, String contactPhone, String address, Tenant tenant) {
+    public Customer(String companyName, String taxId, String contact, String contactName, String contactEmail, String contactPhone, String address, Tenant tenant) {
         this.companyName = companyName;
         this.taxId = taxId;
+        this.contact = contact;
         this.contactName = contactName;
         this.contactEmail = contactEmail;
         this.contactPhone = contactPhone;
@@ -86,6 +97,8 @@ public class Customer {
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     public String getTaxId() { return taxId; }
     public void setTaxId(String taxId) { this.taxId = taxId; }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     public String getContactName() { return contactName; }
     public void setContactName(String contactName) { this.contactName = contactName; }
     public String getContactEmail() { return contactEmail; }
@@ -114,4 +127,10 @@ public class Customer {
     
     public String getPrealertEmail() { return prealertEmail; }
     public void setPrealertEmail(String prealertEmail) { this.prealertEmail = prealertEmail; }
+    
+    public String getCuit() { return cuit != null ? cuit : taxId; }
+    public void setCuit(String cuit) { this.cuit = cuit; }
+    
+    public String getEmail() { return email != null ? email : contactEmail; }
+    public void setEmail(String email) { this.email = email; }
 }

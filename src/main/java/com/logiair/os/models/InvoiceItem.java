@@ -17,8 +17,11 @@ public class InvoiceItem {
     private Invoice invoice;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "air_waybill_id", nullable = false)
+    @JoinColumn(name = "air_waybill_id")
     private AirWaybill airWaybill;
+
+    @Column(name = "manifest_number")
+    private String manifestNumber;
 
     @NotBlank
     @Column(name = "service_description", nullable = false)
@@ -33,10 +36,11 @@ public class InvoiceItem {
 
     public InvoiceItem() {}
 
-    public InvoiceItem(Invoice invoice, AirWaybill airWaybill, String serviceDescription,
+    public InvoiceItem(Invoice invoice, AirWaybill airWaybill, String manifestNumber, String serviceDescription,
                       BigDecimal amount, BigDecimal agencyCommission) {
         this.invoice = invoice;
         this.airWaybill = airWaybill;
+        this.manifestNumber = manifestNumber;
         this.serviceDescription = serviceDescription;
         this.amount = amount;
         this.agencyCommission = agencyCommission;
@@ -48,6 +52,8 @@ public class InvoiceItem {
     public void setInvoice(Invoice invoice) { this.invoice = invoice; }
     public AirWaybill getAirWaybill() { return airWaybill; }
     public void setAirWaybill(AirWaybill airWaybill) { this.airWaybill = airWaybill; }
+    public String getManifestNumber() { return manifestNumber; }
+    public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
     public String getServiceDescription() { return serviceDescription; }
     public void setServiceDescription(String serviceDescription) { this.serviceDescription = serviceDescription; }
     public BigDecimal getAmount() { return amount; }

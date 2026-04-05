@@ -3,8 +3,11 @@ package com.logiair.os.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "air_waybills")
@@ -54,6 +57,30 @@ public class AirWaybill {
     @Column(name = "manifest_number")
     private String manifestNumber;
 
+    @Column(name = "pieces")
+    private Integer pieces = 0;
+
+    @Column(name = "weight_kg", precision = 10, scale = 2)
+    private BigDecimal weightKg = BigDecimal.ZERO;
+
+    @Column(name = "shipper")
+    private String shipper;
+
+    @Column(name = "consignee")
+    private String consignee;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "awb_type", nullable = false)
+    private AirWaybillType awbType = AirWaybillType.HOUSE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_awb_id")
+    private AirWaybill parentAwb;
+
+    @OneToMany(mappedBy = "parentAwb", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AirWaybill> childAwbs = new ArrayList<>();
+
     @Column(columnDefinition = "TEXT")
     private String observations;
 
@@ -70,9 +97,10 @@ public class AirWaybill {
 
     public AirWaybill() {}
 
-    public AirWaybill(String awbNumber, OperationType operationType, String airline, 
+    public AirWaybill(String awbNumber, OperationType operationType, String airline,
                      String origin, String destination, LocalDate arrivalOrDepartureDate,
-                     AirWaybillStatus status, Customer customer, User createdBy, Tenant tenant) {
+                     AirWaybillStatus status, Customer customer, User createdBy, Tenant tenant,
+                     Integer pieces, BigDecimal weightKg, String shipper, String consignee) {
         this.awbNumber = awbNumber;
         this.operationType = operationType;
         this.airline = airline;
@@ -83,6 +111,10 @@ public class AirWaybill {
         this.customer = customer;
         this.createdBy = createdBy;
         this.tenant = tenant;
+        this.pieces = pieces != null ? pieces : 0;
+        this.weightKg = weightKg != null ? weightKg : BigDecimal.ZERO;
+        this.shipper = shipper;
+        this.consignee = consignee;
     }
 
     @PreUpdate
@@ -108,6 +140,20 @@ public class AirWaybill {
     public void setStatus(AirWaybillStatus status) { this.status = status; }
     public String getManifestNumber() { return manifestNumber; }
     public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
+    public Integer getPieces() { return pieces; }
+    public void setPieces(Integer pieces) { this.pieces = pieces; }
+    public BigDecimal getWeightKg() { return weightKg; }
+    public void setWeightKg(BigDecimal weightKg) { this.weightKg = weightKg; }
+    public String getShipper() { return shipper; }
+    public void setShipper(String shipper) { this.shipper = shipper; }
+    public String getConsignee() { return consignee; }
+    public void setConsignee(String consignee) { this.consignee = consignee; }
+    public AirWaybillType getAwbType() { return awbType; }
+    public void setAwbType(AirWaybillType awbType) { this.awbType = awbType; }
+    public AirWaybill getParentAwb() { return parentAwb; }
+    public void setParentAwb(AirWaybill parentAwb) { this.parentAwb = parentAwb; }
+    public List<AirWaybill> getChildAwbs() { return childAwbs; }
+    public void setChildAwbs(List<AirWaybill> childAwbs) { this.childAwbs = childAwbs; }
     public String getObservations() { return observations; }
     public void setObservations(String observations) { this.observations = observations; }
     public Customer getCustomer() { return customer; }
@@ -124,6 +170,7 @@ public class AirWaybill {
         return "AirWaybill{" +
                 "id=" + id +
                 ", awbNumber='" + awbNumber + '\'' +
+                ", awbType=" + awbType +
                 ", operationType=" + operationType +
                 ", airline='" + airline + '\'' +
                 ", origin='" + origin + '\'' +
@@ -131,6 +178,10 @@ public class AirWaybill {
                 ", arrivalOrDepartureDate=" + arrivalOrDepartureDate +
                 ", status=" + status +
                 ", manifestNumber='" + manifestNumber + '\'' +
+                ", pieces=" + pieces +
+                ", weightKg=" + weightKg +
+                ", shipper='" + shipper + '\'' +
+                ", consignee='" + consignee + '\'' +
                 ", observations='" + observations + '\'' +
                 ", createdBy=" + (createdBy != null ? createdBy.getName() : "null") +
                 ", tenant=" + (tenant != null ? tenant.getName() : "null") +

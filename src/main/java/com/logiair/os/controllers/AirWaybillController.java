@@ -3,7 +3,9 @@ package com.logiair.os.controllers;
 import com.logiair.os.dto.request.AirWaybillRequest;
 import com.logiair.os.dto.request.UpdateAirWaybillStatusRequest;
 import com.logiair.os.dto.response.AirWaybillResponse;
+import com.logiair.os.export.service.ExcelExporter;
 import com.logiair.os.models.AirWaybillStatus;
+import com.logiair.os.models.AirWaybillType;
 import com.logiair.os.models.Tenant;
 import com.logiair.os.models.User;
 import com.logiair.os.repositories.UserRepository;
@@ -14,7 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -30,10 +35,12 @@ public class AirWaybillController {
 
     private final AirWaybillService airWaybillService;
     private final UserRepository userRepository;
+    private final ExcelExporter excelExporter;
 
-    public AirWaybillController(AirWaybillService airWaybillService, UserRepository userRepository) {
+    public AirWaybillController(AirWaybillService airWaybillService, UserRepository userRepository, ExcelExporter excelExporter) {
         this.airWaybillService = airWaybillService;
         this.userRepository = userRepository;
+        this.excelExporter = excelExporter;
     }
 
     @PostMapping
@@ -185,5 +192,49 @@ public class AirWaybillController {
         
         List<AirWaybillResponse> airWaybills = airWaybillService.getAirWaybillsByStatuses(tenantId, pendingStatuses);
         return ResponseEntity.ok(airWaybills);
+    }
+
+    @GetMapping("/type/{awbType}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION')")
+    public ResponseEntity<List<AirWaybillResponse>> getAirWaybillsByType(
+            @PathVariable AirWaybillType awbType) {
+        Long tenantId = TenantContext.getCurrentTenantId();
+        List<AirWaybillResponse> airWaybills = airWaybillService.getAirWaybillsByType(tenantId, awbType);
+        return ResponseEntity.ok(airWaybills);
+    }
+
+    @GetMapping("/{parentId}/children")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION')")
+    public ResponseEntity<List<AirWaybillResponse>> getChildAirWaybills(
+            @PathVariable Long parentId) {
+        Long tenantId = TenantContext.getCurrentTenantId();
+        List<AirWaybillResponse> airWaybills = airWaybillService.getChildAirWaybills(tenantId, parentId);
+        return ResponseEntity.ok(airWaybills);
+    }
+
+    @GetMapping("/export/excel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR_LOGISTICS', 'ADMINISTRATION')")
+    public ResponseEntity<byte[]> exportAirWaybillsToExcel(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) AirWaybillType awbType,
+            @RequestParam(required = false) AirWaybillStatus status) {
+        
+        Long tenantId = TenantContext.getCurrentTenantId();
+        
+        List<AirWaybillResponse> airWaybills = airWaybillService.getAirWaybillsForExport(
+                tenantId, startDate, endDate, customerId, awbType, status);
+        
+        String customerName = customerId != null ? "Cliente " + customerId : null;
+        String awbTypeStr = awbType != null ? awbType.toString() : null;
+        
+        byte[] excelBytes = excelExporter.generateAirWaybillsExcel(airWaybills, startDate, endDate, customerName, awbTypeStr);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "guias_aereas.xlsx");
+        
+        return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
     }
 }

@@ -254,14 +254,40 @@ public class InvoiceService {
         return invoiceRepository.countByStatus(tenantId, InvoiceStatus.PAID);
     }
 
+    @Transactional(readOnly = true)
+    public List<com.logiair.os.dto.response.AirWaybillResponse> getAirWaybillsByManifest(Long tenantId, String manifestNumber) {
+        List<AirWaybill> awbs = airWaybillRepository.findByTenantIdAndManifestNumber(tenantId, manifestNumber);
+        return awbs.stream()
+                .map(awb -> {
+                    // Use AirWaybillMapper to convert to response
+                    return com.logiair.os.mappers.AirWaybillMapper.INSTANCE.toResponse(awb);
+                })
+                .toList();
+    }
+
     private InvoiceItem createInvoiceItem(com.logiair.os.dto.request.InvoiceItemRequest request, Invoice invoice, Tenant tenant) {
-        logger.info("Creating invoice item for airWaybillId: {}", request.getAirWaybillId());
+        logger.info("Creating invoice item for airWaybillId: {}, manifestNumber: {}", 
+                   request.getAirWaybillId(), request.getManifestNumber());
 
         InvoiceItem item = invoiceMapper.toItemEntity(request);
         item.setInvoice(invoice);
         
-        // Set AirWaybill only if airWaybillId is provided
-        if (request.getAirWaybillId() != null) {
+        // Handle manifest-based billing
+        if (request.getManifestNumber() != null && !request.getManifestNumber().isEmpty()) {
+            item.setManifestNumber(request.getManifestNumber());
+            
+            // Find and associate all AWBs with this manifest number
+            List<AirWaybill> awbs = airWaybillRepository.findByTenantIdAndManifestNumber(tenant.getId(), request.getManifestNumber());
+            if (!awbs.isEmpty()) {
+                // Associate the first AWB as primary (for reference)
+                item.setAirWaybill(awbs.get(0));
+                logger.info("Associated {} AWBs with manifest number: {}", awbs.size(), request.getManifestNumber());
+            } else {
+                logger.warn("No AWBs found with manifest number: {}", request.getManifestNumber());
+            }
+        }
+        // Set AirWaybill only if airWaybillId is provided and no manifest
+        else if (request.getAirWaybillId() != null) {
             AirWaybill airWaybill = airWaybillRepository.findById(request.getAirWaybillId())
                     .filter(awb -> awb.getTenant().getId().equals(tenant.getId()))
                     .orElseThrow(() -> new ResourceNotFoundException("Air Waybill not found with id: " + request.getAirWaybillId()));

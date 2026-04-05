@@ -17,6 +17,8 @@ public class InvoiceItemRequest {
     private BigDecimal agencyCommission;
     
     private Long airWaybillId;
+    
+    private String manifestNumber;
 
     // Constructors
     public InvoiceItemRequest() {}
@@ -41,4 +43,7 @@ public class InvoiceItemRequest {
     
     public Long getAirWaybillId() { return airWaybillId; }
     public void setAirWaybillId(Long airWaybillId) { this.airWaybillId = airWaybillId; }
+    
+    public String getManifestNumber() { return manifestNumber; }
+    public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
 }

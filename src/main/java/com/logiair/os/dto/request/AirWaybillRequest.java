@@ -2,11 +2,14 @@ package com.logiair.os.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.logiair.os.models.AirWaybillStatus;
+import com.logiair.os.models.AirWaybillType;
 import com.logiair.os.models.OperationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class AirWaybillRequest {
@@ -37,12 +40,27 @@ public class AirWaybillRequest {
     
     private String manifestNumber;
 
+    @Min(value = 0, message = "Pieces cannot be negative")
+    private Integer pieces;
+
+    private BigDecimal weightKg;
+
+    private String shipper;
+
+    private String consignee;
+
+    private AirWaybillType awbType;
+
+    private Long parentAwbId;
+
     // Constructors
     public AirWaybillRequest() {}
 
     public AirWaybillRequest(String awbNumber, OperationType operationType, String airline,
                            String origin, String destination, LocalDate arrivalOrDepartureDate,
-                           Long customerId, String observations, String manifestNumber) {
+                           Long customerId, String observations, String manifestNumber,
+                           Integer pieces, BigDecimal weightKg, String shipper, String consignee,
+                           AirWaybillType awbType, Long parentAwbId) {
         this.awbNumber = awbNumber;
         this.operationType = operationType;
         this.airline = airline;
@@ -52,6 +70,12 @@ public class AirWaybillRequest {
         this.customerId = customerId;
         this.observations = observations;
         this.manifestNumber = manifestNumber;
+        this.pieces = pieces;
+        this.weightKg = weightKg;
+        this.shipper = shipper;
+        this.consignee = consignee;
+        this.awbType = awbType;
+        this.parentAwbId = parentAwbId;
     }
 
     // Getters and Setters
@@ -81,4 +105,22 @@ public class AirWaybillRequest {
     
     public String getManifestNumber() { return manifestNumber; }
     public void setManifestNumber(String manifestNumber) { this.manifestNumber = manifestNumber; }
+
+    public Integer getPieces() { return pieces; }
+    public void setPieces(Integer pieces) { this.pieces = pieces; }
+
+    public BigDecimal getWeightKg() { return weightKg; }
+    public void setWeightKg(BigDecimal weightKg) { this.weightKg = weightKg; }
+
+    public String getShipper() { return shipper; }
+    public void setShipper(String shipper) { this.shipper = shipper; }
+
+    public String getConsignee() { return consignee; }
+    public void setConsignee(String consignee) { this.consignee = consignee; }
+
+    public AirWaybillType getAwbType() { return awbType; }
+    public void setAwbType(AirWaybillType awbType) { this.awbType = awbType; }
+
+    public Long getParentAwbId() { return parentAwbId; }
+    public void setParentAwbId(Long parentAwbId) { this.parentAwbId = parentAwbId; }
 }

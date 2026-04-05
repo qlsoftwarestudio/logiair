@@ -2,6 +2,7 @@ package com.logiair.os.controllers;
 
 import com.logiair.os.dto.request.InvoiceRequest;
 import com.logiair.os.dto.request.UpdateInvoiceStatusRequest;
+import com.logiair.os.dto.response.AirWaybillResponse;
 import com.logiair.os.dto.response.InvoiceResponse;
 import com.logiair.os.export.service.PdfExporter;
 import com.logiair.os.export.service.ExcelExporter;
@@ -274,5 +275,15 @@ public class InvoiceController {
         } catch (Exception e) {
             throw new RuntimeException("Error generating " + format.toUpperCase() + ": " + e.getMessage(), e);
         }
+    }
+
+    @GetMapping("/manifest/{manifestNumber}/air-waybills")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATION', 'OPERATOR_LOGISTICS')")
+    public ResponseEntity<List<AirWaybillResponse>> getAirWaybillsByManifest(
+            @PathVariable String manifestNumber) {
+        
+        Long tenantId = TenantContext.getCurrentTenantId();
+        List<AirWaybillResponse> airWaybills = invoiceService.getAirWaybillsByManifest(tenantId, manifestNumber);
+        return ResponseEntity.ok(airWaybills);
     }
 }

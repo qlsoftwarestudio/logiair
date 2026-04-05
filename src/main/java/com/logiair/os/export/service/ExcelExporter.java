@@ -4,6 +4,7 @@ import com.logiair.os.export.enums.ReportType;
 import com.logiair.os.export.exception.ExportException;
 import com.logiair.os.dto.response.InvoiceResponse;
 import com.logiair.os.dto.response.InvoiceItemResponse;
+import com.logiair.os.dto.response.AirWaybillResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -650,5 +651,120 @@ public class ExcelExporter {
         if (value instanceof BigDecimal) return (BigDecimal) value;
         if (value instanceof Number) return BigDecimal.valueOf(((Number) value).doubleValue());
         return BigDecimal.ZERO;
+    }
+    
+    public byte[] generateAirWaybillsExcel(List<AirWaybillResponse> airWaybills, LocalDate startDate, LocalDate endDate, 
+                                           String customerName, String awbType) throws ExportException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            
+            Sheet sheet = workbook.createSheet("Guías Aéreas");
+            
+            int rowNum = createAirWaybillsSheet(workbook, sheet, airWaybills, startDate, endDate, customerName, awbType);
+            
+            autoSizeColumns(sheet, 12);
+            workbook.write(outputStream);
+            
+            return outputStream.toByteArray();
+            
+        } catch (IOException e) {
+            throw new ExportException("Error generating air waybills Excel file: " + e.getMessage(), e);
+        }
+    }
+    
+    private int createAirWaybillsSheet(XSSFWorkbook workbook, Sheet sheet, List<AirWaybillResponse> airWaybills,
+                                      LocalDate startDate, LocalDate endDate, String customerName, String awbType) {
+        int rowNum = 0;
+        
+        // Título
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("REPORTE DE GUÍAS AÉREAS");
+        titleCell.setCellStyle(createHeaderStyle(workbook));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 11));
+        
+        rowNum++; // Espacio
+        
+        // Filtros aplicados
+        createSectionTitle(workbook, sheet, rowNum++, "Filtros Aplicados");
+        
+        if (startDate != null && endDate != null) {
+            addKeyValueRow(workbook, sheet, rowNum++, "Período:", 
+                startDate.format(DATE_FORMATTER) + " a " + endDate.format(DATE_FORMATTER));
+        }
+        if (customerName != null && !customerName.isEmpty()) {
+            addKeyValueRow(workbook, sheet, rowNum++, "Cliente:", customerName);
+        }
+        if (awbType != null && !awbType.isEmpty()) {
+            addKeyValueRow(workbook, sheet, rowNum++, "Tipo de Guía:", awbType);
+        }
+        
+        rowNum++; // Espacio
+        
+        // Resumen estadístico
+        createSectionTitle(workbook, sheet, rowNum++, "Resumen");
+        
+        long totalPieces = airWaybills.stream()
+                .mapToLong(awb -> awb.getPieces() != null ? awb.getPieces() : 0)
+                .sum();
+        
+        BigDecimal totalWeight = airWaybills.stream()
+                .map(awb -> awb.getWeightKg() != null ? awb.getWeightKg() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        long masterCount = airWaybills.stream()
+                .filter(awb -> awb.getAwbType() != null && awb.getAwbType().toString().equals("MASTER"))
+                .count();
+        
+        long houseCount = airWaybills.stream()
+                .filter(awb -> awb.getAwbType() != null && awb.getAwbType().toString().equals("HOUSE"))
+                .count();
+        
+        addKeyValueRow(workbook, sheet, rowNum++, "Total Guías:", airWaybills.size());
+        addKeyValueRow(workbook, sheet, rowNum++, "Guías Madre (MASTER):", masterCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Guías Hija (HOUSE):", houseCount);
+        addKeyValueRow(workbook, sheet, rowNum++, "Total Bultos:", totalPieces);
+        addKeyValueRow(workbook, sheet, rowNum++, "Peso Total (Kg):", totalWeight);
+        
+        rowNum++; // Espacio
+        
+        // Tabla de guías
+        createSectionTitle(workbook, sheet, rowNum++, "Detalle de Guías Aéreas");
+        
+        // Headers
+        Row headerRow = sheet.createRow(rowNum++);
+        String[] headers = {"N° Guía", "Tipo", "N° Manifiesto", "Estado", "Fecha Arribo", 
+                           "Aerolínea", "Origen", "Destino", "Bultos", "Peso (Kg)", 
+                           "Shipper", "Consignee", "Cliente"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+            headerRow.getCell(i).setCellStyle(createTableHeaderStyle(workbook));
+        }
+        
+        // Data
+        for (AirWaybillResponse awb : airWaybills) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(awb.getAwbNumber());
+            row.createCell(1).setCellValue(awb.getAwbType() != null ? awb.getAwbType().toString() : "");
+            row.createCell(2).setCellValue(awb.getManifestNumber() != null ? awb.getManifestNumber() : "");
+            row.createCell(3).setCellValue(awb.getStatus() != null ? awb.getStatus().toString() : "");
+            row.createCell(4).setCellValue(awb.getArrivalOrDepartureDate() != null ? 
+                awb.getArrivalOrDepartureDate().format(DATE_FORMATTER) : "");
+            row.createCell(5).setCellValue(awb.getAirline() != null ? awb.getAirline() : "");
+            row.createCell(6).setCellValue(awb.getOrigin() != null ? awb.getOrigin() : "");
+            row.createCell(7).setCellValue(awb.getDestination() != null ? awb.getDestination() : "");
+            row.createCell(8).setCellValue(awb.getPieces() != null ? awb.getPieces() : 0);
+            
+            Cell weightCell = row.createCell(9);
+            weightCell.setCellValue(awb.getWeightKg() != null ? awb.getWeightKg().doubleValue() : 0.0);
+            weightCell.setCellStyle(createCurrencyStyle(workbook));
+            
+            row.createCell(10).setCellValue(awb.getShipper() != null ? awb.getShipper() : "");
+            row.createCell(11).setCellValue(awb.getConsignee() != null ? awb.getConsignee() : "");
+            row.createCell(12).setCellValue(awb.getCustomer() != null && awb.getCustomer().getCompanyName() != null ? 
+                awb.getCustomer().getCompanyName() : "");
+        }
+        
+        return rowNum;
     }
 }

@@ -41,11 +41,13 @@ public interface InvoiceMapper {
     void updateEntityFromRequest(InvoiceRequest request, @MappingTarget Invoice invoice);
     
     @Mapping(target = "airWaybill", source = "airWaybill", qualifiedByName = "airWaybillToResponse")
+    @Mapping(target = "manifestNumber", source = "manifestNumber")
     InvoiceItemResponse toItemResponse(InvoiceItem item);
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "invoice", ignore = true)
     @Mapping(target = "airWaybill", ignore = true)
+    @Mapping(target = "manifestNumber", source = "manifestNumber")
     InvoiceItem toItemEntity(InvoiceItemRequest request);
     
     @Named("customerToResponse")

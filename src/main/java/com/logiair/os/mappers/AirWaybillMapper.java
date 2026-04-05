@@ -17,6 +17,9 @@ public interface AirWaybillMapper {
 
     @Mapping(target = "customer", source = "customer", qualifiedByName = "customerToResponse")
     @Mapping(target = "createdBy", source = "createdBy.name")
+    @Mapping(target = "parentAwbId", source = "parentAwb.id")
+    @Mapping(target = "parentAwbNumber", source = "parentAwb.awbNumber")
+    @Mapping(target = "childAwbs", ignore = true)
     AirWaybillResponse toResponse(AirWaybill airWaybill);
     
     @Mapping(target = "id", ignore = true)
@@ -25,7 +28,9 @@ public interface AirWaybillMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "status", ignore = true) // Will be set to PRE_ALERT by default
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "parentAwb", ignore = true)
+    @Mapping(target = "childAwbs", ignore = true)
     AirWaybill toEntity(AirWaybillRequest request);
     
     @Mapping(target = "id", ignore = true)
@@ -35,6 +40,8 @@ public interface AirWaybillMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "parentAwb", ignore = true)
+    @Mapping(target = "childAwbs", ignore = true)
     void updateEntityFromRequest(AirWaybillRequest request, @MappingTarget AirWaybill airWaybill);
     
     @Named("customerToResponse")
