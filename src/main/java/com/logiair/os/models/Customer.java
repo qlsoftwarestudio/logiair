@@ -32,8 +32,7 @@ public class Customer {
     @Column(name = "email")
     private String email;
 
-    @NotBlank
-    @Column(nullable = false)
+    @Column(name = "contact")
     private String contact;
 
     @NotBlank

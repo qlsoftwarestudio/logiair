@@ -11,8 +11,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.web.cors.CorsConfigurationSource;
 import static org.springframework.security.config.annotation.web.builders.HttpSecurity.*;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final TenantContextFilter tenantContextFilter;
